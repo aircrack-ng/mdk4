@@ -18,18 +18,21 @@ MDK3 is licenced under the GPLv2 or later.
 
 MDK4 update plan:
 
--Support two wireless card, one for receive data, another for send data.
--Support both 2.4 to 5 GHz
--Change the frequency hopping mechanism
-  Sniff beacon frames send by AP nearby, collect exists channels. 
--802.11 packets replay
--A friendly console interface
+- Support two wireless card, one for receive data, another for send data.
+- Support both 2.4 to 5 GHz
+- Change the frequency hopping mechanism
+   Sniff beacon frames send by AP nearby, collect exists channels.
+- 802.11 packets replay
+- A friendly console interface
+
 
 Amok mode(option d)
--Handle more packet types when sniffing data frames to find targets
--Support block the specified ESSID/BSSID/Client MAC in command option
+
+- Handle more packet types when sniffing data frames to find targets
+- Support block the specified ESSID/BSSID/Client MAC in command option
 
 Others
--Refer to the MDK3 TODO list
+- Refer to the MDK3 TODO list
+
 
 
