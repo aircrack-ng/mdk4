@@ -1,10 +1,10 @@
-.TH MDK3 8 "July 2010" "mdk3 v7"
+.TH MDK4 1 "February 2018" "mdk4 v1"
 
 .SH NAME
-mdk3 \- IEEE 802.11 PoC tool
+mdk4 \- IEEE 802.11 PoC tool
 
 .SH SYNOPSIS
-.B mdk3
+.B mdk4
 [
 .IR interface
 ] [
@@ -14,7 +14,7 @@ mdk3 \- IEEE 802.11 PoC tool
 ]
 
 .SH DESCRIPTION
-.I mdk3
+.I mdk4
 is a proof-of-concept (PoC) tool to exploit common IEEE 802.11 protocol weaknesses.
 
 .SH OPTIONS
@@ -121,7 +121,7 @@ Set speed in packets per second to
 (Default: infinity)
 .TP
 .BI -c " [chan_1,chan_2,...chan_n]"
-Enable channel hopping. Without providing any channels, mdk3 will hop an all 14 b/g channels. The current channel will be changed every 5 seconds.
+Enable channel hopping. Without providing any channels, mdk4 will hop an all 14 b/g channels. The current channel will be changed every 5 seconds.
 .RE
 
 .B f
@@ -148,7 +148,7 @@ Begin bruteforcing with MAC address
 .B g
 - WPA Downgrade Test
 .br
-Deauthenticates Stations and APs sending WPA encrypted packets. With this test you can check if the sysadmin will try setting his network to WEP or disable encryption. mdk3 will let WEP and unencrypted clients work, so if the sysadmin simply thinks "WPA is broken" he sure isn't the right one for this job (this can/should be combined with social engineering).
+Deauthenticates Stations and APs sending WPA encrypted packets. With this test you can check if the sysadmin will try setting his network to WEP or disable encryption. mdk4 will let WEP and unencrypted clients work, so if the sysadmin simply thinks "WPA is broken" he sure isn't the right one for this job (this can/should be combined with social engineering).
 .RS
 .TP
 .BI -t " bssid"
@@ -287,5 +287,5 @@ Set speed in packets per second to
 .RE
 
 .SH AUTHORS
-.I mdk3
-was written by Pedro Larbig (ASPj) with contributions from the aircrack-ng community: Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape, telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik and Ruslan Nabioullin.
+.I mdk4
+was written by E7mer, Pedro Larbig (ASPj) with contributions from the aircrack-ng community: Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape, telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik and Ruslan Nabioullin.

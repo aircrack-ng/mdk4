@@ -271,7 +271,7 @@ void test_brute() {
 
 int main() {
   
-  printf("mdk3 Implementation Tests\n\n");
+  printf("mdk4 Implementation Tests\n\n");
   
   srandom(time(NULL));	//Fresh numbers each run
   

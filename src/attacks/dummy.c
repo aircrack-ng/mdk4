@@ -6,10 +6,10 @@
 #define DUMMY_MODE 'D'
 #define DUMMY_NAME "An empty dummy attack"
 
-// A starting point to build new attack modules for mdk3
+// A starting point to build new attack modules for mdk4
 
 // IMPORTANT:
-// In order to include your attack into mdk3, you have to add it to attacks.h!
+// In order to include your attack into mdk4, you have to add it to attacks.h!
 
 struct dummy_options {
   int option_count;
@@ -51,7 +51,7 @@ struct packet dummy_getpacket(void *options) {
   options = options;
   struct packet pkt;
   
-  printf("Build your packet here and return it. NULL data makes mdk3 exit\n");
+  printf("Build your packet here and return it. NULL data makes mdk4 exit\n");
    
   pkt.len = 0;
   

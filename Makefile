@@ -10,8 +10,8 @@ all: clean
 
 install: all
 	PREFIX=$(PREFIX) $(MAKE) -C $(SRC) install
-	install -D -m 0644 man/mdk3.8 $(MANDIR)/man8/mdk3.8
-	gzip -f $(MANDIR)/man8/mdk3.8
+	install -D -m 0644 man/mdk4.1 $(MANDIR)/man8/mdk4.1
+	gzip -f $(MANDIR)/man8/mdk4.1
 
 .PHONY : clean
 clean:

@@ -1,5 +1,5 @@
 /*
- * mdk3, a 802.11 wireless network security testing tool
+ * mdk4, a 802.11 wireless network security testing tool
  *       Just like John the ripper or nmap, now part of most distros,
  *       it is important that the defender of a network can test it using
  *       aggressive tools.... before somebody else does.

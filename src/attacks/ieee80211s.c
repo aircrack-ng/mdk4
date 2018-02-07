@@ -50,7 +50,7 @@ void ieee80211s_longhelp()
 	  "         5: Skript-kid's automated attack trying all of the above randomly :)\n"
 	  "      -b <impersonated_meshpoint>\n"
 	  "         Create a Blackhole, using the impersonated_meshpoint's MAC adress\n"
-	  "         mdk3 will answer every incoming Route Request with a perfect route over the impersonated node.\n"
+	  "         mdk4 will answer every incoming Route Request with a perfect route over the impersonated node.\n"
 	  "      -p <impersonated_meshpoint>\n"
 	  "         Path Request Flooding using the impersonated_meshpoint's adress\n"
 	  "         Adjust the speed switch (-s) for maximum profit!\n"

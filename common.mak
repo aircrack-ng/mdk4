@@ -114,7 +114,7 @@ ifneq ($(origin AR),environment)
 	AR	= $(TOOL_PREFIX)ar
 endif
 
-REVISION	= mdk3-v7
+REVISION	= mdk4-v1
 REVFLAGS	?= -D_REVISION=$(REVISION)
 
 OPTFLAGS        = -D_FILE_OFFSET_BITS=64

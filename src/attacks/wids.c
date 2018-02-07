@@ -45,7 +45,7 @@ void wids_longhelp()
 	  "      -e <SSID>\n"
 	  "         SSID of target WDS network\n"
 	  "      -c [chan,chan,...,chan[:speed]]\n"
-	  "         Enable channel hopping. When -c h is given, mdk3 will hop an all\n"
+	  "         Enable channel hopping. When -c h is given, mdk4 will hop an all\n"
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"
 	  "         if speed is not specified. Speed value is in milliseconds!\n"
 	  "      -z\n"

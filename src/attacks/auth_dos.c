@@ -273,7 +273,7 @@ void auth_dos_intelligent_sniffer(void *target) {
 	  } else {
 	    if (!size_warning) {
 	      printf("--------------------------------------------------------------\n");
-	      printf("WARNING: mdk3 has now captured more than %ld MB of data packets\n", max_data_size / 1024 / 1024);
+	      printf("WARNING: mdk4 has now captured more than %ld MB of data packets\n", max_data_size / 1024 / 1024);
 	      printf("         New data frames will be ignored to save memory!\n");
 	      printf("--------------------------------------------------------------\n");
 	      size_warning = 1;
@@ -418,7 +418,7 @@ struct packet auth_dos_intelligent_getpacket(struct auth_dos_options *aopt) {
   cl = cl->next;
 
   if (oldclient_count < 30) {
-    // Make sure that mdk3 doesn't waste time reauthing kicked clients or keeping things alive
+    // Make sure that mdk4 doesn't waste time reauthing kicked clients or keeping things alive
     // Every 30 injected packets, it should fake another client
     oldclient_count++;
 

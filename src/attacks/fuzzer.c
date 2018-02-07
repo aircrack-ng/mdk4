@@ -34,7 +34,7 @@ void fuzz_longhelp()
 {
   printf( "  A simple packet fuzzer with multiple packet sources\n"
           "  and a nice set of modifiers. Be careful!\n"
-          "  mdk3 randomly selects the given sources and one or multiple modifiers.\n"
+          "  mdk4 randomly selects the given sources and one or multiple modifiers.\n"
           "      -s <sources>\n"
           "         Specify one or more of the following packet sources:\n"
           "         a - Sniff packets from the air\n"
@@ -51,7 +51,7 @@ void fuzz_longhelp()
           "         c - Cut packets short, preferably somewhere in headers or tags\n"
           "         d - Insert random values in Duration and Flags fields\n"
           "      -c [chan,chan,...,chan[:speed]]\n"
-          "         Enable channel hopping. When -c h is given, mdk3 will hop an all\n"
+          "         Enable channel hopping. When -c h is given, mdk4 will hop an all\n"
           "         14 b/g channels. Channel will be changed every 3 seconds,\n"
           "         if speed is not specified. Speed value is in milliseconds!\n"
           "      -p <pps>\n"

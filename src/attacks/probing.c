@@ -156,7 +156,7 @@ unsigned int get_ssid_len(struct ether_addr target) {
 	if (ssidlen < 2) { free(ssid); return 0; }  //SSID lengths 0 and 1 are known to be "full hidden", ie no length info :(
 	if (strlen(ssid) == ssidlen) {
 	  printf("WARNING: SSID DOES NOT SEEM TO BE HIDDEN, SSID IS %s\n", ssid);
-	  printf("mdk3 will still continue, but its unlikely that this SSID is wrong\n");
+	  printf("mdk4 will still continue, but its unlikely that this SSID is wrong\n");
 	}
 	free(ssid);
 	return ssidlen;
