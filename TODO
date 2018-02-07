@@ -1,6 +1,14 @@
 MDK4 TODO List
 
+Support both 2.4 to 5 GHz
+Change the frequency hopping mechanism
+Sniffing beacon frames sent by APs nearby, collect exists channels to hop.
+802.11 packets replay
+A friendly console interface
 
+Amok mode(option d)
+Handle more packet types when sniffing data frames to find targets
+Support block the specified ESSID/BSSID/Client MAC in command option
 
 
 MDK3 TODO List

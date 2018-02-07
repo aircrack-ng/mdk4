@@ -11,11 +11,10 @@
 #include "fragmenting.h"
 
 #define VERSION "v1"
-#define VERSION_COOL "OMG! He cleaned his code!"
+#define VERSION_COOL "Awesome!"
 
 char *mdk4_help = "MDK 4.0 " VERSION " - \"" VERSION_COOL "\"\n"
-		  "MDK4 is a new version of MDK3\n"
-		  "by E7mer@PegasusTeam, thanks to the aircrack-ng community\n"
+		  "by E7mer@360PegasusTeam, thanks to the aircrack-ng community\n"
 		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
 		  "And with lots of help from the great aircrack-ng community:\n"
 		  "Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape,\n"
@@ -27,7 +26,8 @@ char *mdk4_help = "MDK 4.0 " VERSION " - \"" VERSION_COOL "\"\n"
 		  "network owner before running MDK against it.\n\n"
 		  "This code is licenced under the GPLv2 or later\n\n"
 		  "MDK USAGE:\n"
-		  "mdk4 <interface> <attack_mode> [attack_options]\n\n"
+		  "mdk4 <interface> <attack_mode> [attack_options]\n"
+		  "mdk4 <interface in> <interface out> <attack_mode> [attack_options]\n\n"
 		  "Try mdk4 --fullhelp for all attack options\n"
 		  "Try mdk4 --help <attack_mode> for info about one attack only\n\n";
 		  
@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
   struct attacks *a, *cur_attack = NULL;
   void *cur_options;
   int i, att_cnt;
+  int dual_interface = 0;
       
   a = load_attacks(&att_cnt);
   
@@ -132,19 +133,31 @@ int main(int argc, char *argv[]) {
   
   if (argc < 3) print_help_and_die(a, att_cnt, 0, NULL);
   
-  if (strlen(argv[2]) != 1) print_help_and_die(a, att_cnt, 0, "Attack Mode is only a single character!\n");
+  if (strlen(argv[2]) != 1){
+	if(argc > 3){
+		if(strlen(argv[3]) != 1){
+			print_help_and_die(a, att_cnt, 0, "Attack Mode is only a single character!\n");
+		}else{
+			dual_interface = 1;
+		}
+	}else{
+		print_help_and_die(a, att_cnt, 0, "Attack Mode is only a single character!\n");
+	}
+
+  }
   
   for(i=0; i<att_cnt; i++) {
-    if (argv[2][0] == a[i].mode_identifier) cur_attack = a + i;
+	if (argv[2+dual_interface][0] == a[i].mode_identifier) cur_attack = a + i;
   }
   
   if (cur_attack == NULL) print_help_and_die(a, att_cnt, 0, "Invalid Attack Mode\n");
   
   if (! strcmp(argv[1], "--help")) { cur_attack->print_longhelp(); return 0; }
   
-  if (osdep_start(argv[1])) {
-    printf("Starting OSDEP on %s failed\n", argv[1]);
-    return 2;
+
+  if (osdep_start(argv[1], argv[1+dual_interface])) {
+	printf("Starting OSDEP failed\n");
+	return 2;
   }
   
   /* drop privileges */
@@ -152,7 +165,7 @@ int main(int argc, char *argv[]) {
 
   for(i=0; i<att_cnt; i++) free(a[i].attack_name); //Make Valgrind smile :)
 
-  i = 2 + parse_evasion(argc - 2, argv + 2);
+  i = 2 + parse_evasion(argc - 2 - dual_interface, argv + 2 + dual_interface) + dual_interface;
   
   cur_options = cur_attack->parse_options(argc - i, argv + i);
   if (!cur_options) return 1;
