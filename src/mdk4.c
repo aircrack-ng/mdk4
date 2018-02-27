@@ -9,6 +9,7 @@
 #include "osdep.h"
 #include "ghosting.h"
 #include "fragmenting.h"
+#include "channelhopper.h"
 
 #define VERSION "v1"
 #define VERSION_COOL "Awesome!"
@@ -171,6 +172,13 @@ int main(int argc, char *argv[]) {
   if (!cur_options) return 1;
 
   srandom(time(NULL));	//Fresh numbers each run
+  
+  /*init_channel_list();
+  
+  while(1)
+  {
+	  sleep(2);
+  }*/
   
   //Parsing done, start attacks
   main_loop(cur_attack, cur_options);

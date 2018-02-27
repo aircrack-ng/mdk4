@@ -5,5 +5,5 @@
 //Starts hopping channels, switches channel round-robin style every useconds µs
 //If called again, it does nothing, only one hopper is possible (of course)
 void init_channel_hopper(char *chanlist, int useconds);
-
+void init_channel_list();
 #endif

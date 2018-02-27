@@ -24,6 +24,8 @@ struct deauth_options {
 
 //Global things, shared by packet creation and stats printing
 struct ether_addr bssid, station;
+struct ether_addr mac_block;                 // Mac for d mode, -B, -C, -E
+unsigned char essid_block[ETHER_ADDR_LEN];          // Essid for d mode, -E
 
 void deauth_shorthelp()
 {
@@ -47,7 +49,13 @@ void deauth_longhelp()
 	  "      -c [chan,chan,...,chan[:speed]]\n"
 	  "         Enable channel hopping. When -c h is given, mdk4 will hop an all\n"
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"
-	  "         if speed is not specified. Speed value is in milliseconds!\n");
+	  "         if speed is not specified. Speed value is in milliseconds!\n"
+	  "      -E <ESSID>\n"
+	  "         Specify ESSID to attack.\n"
+	  "      -B <BSSID>\n"
+	  "         Specify BSSID to attack.\n"
+	  "      -C <Client MAC address>\n"
+	  "         Specify a client MAC address to attack.\n");
 }
 
 
@@ -61,7 +69,7 @@ void *deauth_parse(int argc, char *argv[]) {
   dopt->speed = 0;
   dopt->stealth = 0;
 
-  while ((opt = getopt(argc, argv, "w:b:s:xc:")) != -1) {
+  while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:C:")) != -1) {
     switch (opt) {
       case 'w':
 	if (dopt->isblacklist || dopt->greylist) {
@@ -92,6 +100,19 @@ void *deauth_parse(int argc, char *argv[]) {
 	  init_channel_hopper(optarg, speed);
 	}
       break;
+	  case 'E':
+	dopt->isblacklist = 2;
+	memcpy(essid_block, optarg, strlen(optarg));
+	//get_target_bssid();
+	  break;
+	  case 'B':
+	dopt->isblacklist = 3;
+	mac_block = parse_mac(optarg);
+	  break;
+	  case 'C':
+	dopt->isblacklist = 4;
+	mac_block = parse_mac(optarg);
+	  break;
       default:
 	deauth_longhelp();
 	printf("\n\nUnknown option %c\n", opt);
@@ -102,6 +123,32 @@ void *deauth_parse(int argc, char *argv[]) {
   return (void *) dopt;
 }
 
+struct ether_addr get_target_bssid()
+{
+	struct ether_addr mac_block;
+	struct packet sniffed;
+	struct ieee_hdr *hdr;
+  
+	while(1) {
+		
+		sniffed = osdep_read_packet();
+		if (sniffed.len == 0) exit(-1);
+		
+		hdr = (struct ieee_hdr *) sniffed.data;
+		if (hdr->type == IEEE80211_TYPE_BEACON )
+		{
+			if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
+				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
+				break;
+			}	
+		}
+	}
+	
+	printf("SSID: %s, MAC: %0x:%0x:%0x:%0x:%0x:%0x\n", essid_block, mac_block.ether_addr_octet[0], mac_block.ether_addr_octet[1],
+	mac_block.ether_addr_octet[2],mac_block.ether_addr_octet[3],mac_block.ether_addr_octet[4],mac_block.ether_addr_octet[5]);
+
+	return mac_block;
+}
 
 unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char *greylist) {
   struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
@@ -109,10 +156,33 @@ unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char 
   if (! greylist) return 1;	//Always accept when no black/whitelisting selected
   
   // If any of the Adresses is Blacklisted, ACCEPT target
-  if (isblacklist) {
+  if (isblacklist == 1) {
     if (is_blacklisted(hdr->addr1)) return 1;
     if (is_blacklisted(hdr->addr2)) return 1;
     if (is_blacklisted(hdr->addr3)) return 1;
+  }
+  else if(isblacklist == 2)
+  {
+	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
+	MAC_MATCHES(mac_block, hdr->addr2)||
+	MAC_MATCHES(mac_block, hdr->addr3))
+		return 1;
+		
+  }
+  else if(isblacklist == 3)
+  {
+	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
+	MAC_MATCHES(mac_block, hdr->addr2)||
+	MAC_MATCHES(mac_block, hdr->addr3))
+		return 1;
+	
+  }
+  else if(isblacklist == 4)
+  {
+	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
+	MAC_MATCHES(mac_block, hdr->addr2)||
+	MAC_MATCHES(mac_block, hdr->addr3))
+		return 1;
   // IF any of the Adresses is Whitelisted, SKIP target
   } else {
     if (is_whitelisted(hdr->addr1)) return 0;
@@ -139,8 +209,24 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, u
     if (sniffed.len == 0) exit(-1);
     
     hdr = (struct ieee_hdr *) sniffed.data;
+	
+	if(isblacklist == 2){
+		if(hdr->type == IEEE80211_TYPE_BEACON){
+				if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
+				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
+			}	
+		}
+	}
     
-    if ((hdr->type != IEEE80211_TYPE_DATA) && (hdr->type != IEEE80211_TYPE_QOSDATA)) continue;
+    if ((hdr->type != IEEE80211_TYPE_DATA) && 
+	(hdr->type != IEEE80211_TYPE_QOSDATA) &&
+	(hdr->type != IEEE80211_TYPE_NULL) &&
+	(hdr->type != IEEE80211_TYPE_AUTH) &&
+	(hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
+	(hdr->type != IEEE80211_TYPE_ASSOCRES) &&
+	(hdr->type != IEEE80211_TYPE_REASSOCREQ)) 
+		continue;
+		
     if (stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
 
     if (accept_target(&sniffed, isblacklist, greylist)) break;

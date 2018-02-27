@@ -17,4 +17,6 @@ void deauth_print_stats(void *options);
 
 void deauth_perform_check(void *options);
 
+struct ether_addr get_target_bssid();
+
 #endif
