@@ -50,12 +50,12 @@ void deauth_longhelp()
 	  "         Enable channel hopping. When -c h is given, mdk4 will hop an all\n"
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"
 	  "         if speed is not specified. Speed value is in milliseconds!\n"
-	  "      -E <ESSID>\n"
-	  "         Specify ESSID to attack.\n"
-	  "      -B <BSSID>\n"
-	  "         Specify BSSID to attack.\n"
-	  "      -C <Client MAC address>\n"
-	  "         Specify a client MAC address to attack.\n");
+	  "      -E <AP ESSID>\n"
+	  "         Specify an AP ESSID to attack.\n"
+	  "      -B <AP BSSID>\n"
+	  "         Specify an AP BSSID to attack.\n"
+	  "      -S <Station MAC address>\n"
+	  "         Specify a station MAC address to attack.\n");
 }
 
 
@@ -69,7 +69,7 @@ void *deauth_parse(int argc, char *argv[]) {
   dopt->speed = 0;
   dopt->stealth = 0;
 
-  while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:C:")) != -1) {
+  while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:S:")) != -1) {
     switch (opt) {
       case 'w':
 	if (dopt->isblacklist || dopt->greylist) {
@@ -109,7 +109,7 @@ void *deauth_parse(int argc, char *argv[]) {
 	dopt->isblacklist = 3;
 	mac_block = parse_mac(optarg);
 	  break;
-	  case 'C':
+	  case 'S':
 	dopt->isblacklist = 4;
 	mac_block = parse_mac(optarg);
 	  break;

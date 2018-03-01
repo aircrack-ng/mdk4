@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
 
   srandom(time(NULL));	//Fresh numbers each run
   
-  /*init_channel_list();
+  /*nl80211_init_channel_list();
   
   while(1)
   {
