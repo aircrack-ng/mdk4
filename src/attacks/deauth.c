@@ -15,9 +15,19 @@
 
 #define LIST_REREAD_PERIOD 3
 
+enum blacklist_type{
+	BLACKLIST_FROM_NONE,
+	BLACKLIST_FROM_FILE,
+	BLACKLIST_FROM_ESSID,
+	BLACKLIST_FROM_BSSID,
+	BLACKLIST_FROM_STATION
+	
+};
+
+
 struct deauth_options {
   char *greylist;
-  unsigned char isblacklist;
+  enum blacklist_type isblacklist;
   unsigned int speed;
   int stealth;
 };
@@ -65,7 +75,7 @@ void *deauth_parse(int argc, char *argv[]) {
   struct deauth_options *dopt = malloc(sizeof(struct deauth_options));
   
   dopt->greylist = NULL;
-  dopt->isblacklist = 0;
+  dopt->isblacklist = BLACKLIST_FROM_NONE;
   dopt->speed = 0;
   dopt->stealth = 0;
 
@@ -80,7 +90,7 @@ void *deauth_parse(int argc, char *argv[]) {
 	if (dopt->isblacklist || dopt->greylist) {
 	  printf("Only one -w or -b may be selected once\n"); return NULL; }
 	dopt->greylist = malloc(strlen(optarg) + 1); strcpy(dopt->greylist, optarg);
-	dopt->isblacklist = 1;
+	dopt->isblacklist = BLACKLIST_FROM_FILE;
       break;
       case 's':
 	dopt->speed = (unsigned int) atoi(optarg);
@@ -101,16 +111,15 @@ void *deauth_parse(int argc, char *argv[]) {
 	}
       break;
 	  case 'E':
-	dopt->isblacklist = 2;
+	dopt->isblacklist = BLACKLIST_FROM_ESSID;
 	memcpy(essid_block, optarg, strlen(optarg));
-	//get_target_bssid();
 	  break;
 	  case 'B':
-	dopt->isblacklist = 3;
+	dopt->isblacklist = BLACKLIST_FROM_BSSID;
 	mac_block = parse_mac(optarg);
 	  break;
 	  case 'S':
-	dopt->isblacklist = 4;
+	dopt->isblacklist = BLACKLIST_FROM_STATION;
 	mac_block = parse_mac(optarg);
 	  break;
       default:
@@ -156,33 +165,20 @@ unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char 
   if (! greylist) return 1;	//Always accept when no black/whitelisting selected
   
   // If any of the Adresses is Blacklisted, ACCEPT target
-  if (isblacklist == 1) {
+  if (isblacklist == BLACKLIST_FROM_FILE) {
     if (is_blacklisted(hdr->addr1)) return 1;
     if (is_blacklisted(hdr->addr2)) return 1;
     if (is_blacklisted(hdr->addr3)) return 1;
   }
-  else if(isblacklist == 2)
+  else if(isblacklist == BLACKLIST_FROM_ESSID || 
+  isblacklist == BLACKLIST_FROM_BSSID  || 
+  isblacklist == BLACKLIST_FROM_STATION)
   {
 	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
 	MAC_MATCHES(mac_block, hdr->addr2)||
 	MAC_MATCHES(mac_block, hdr->addr3))
 		return 1;
 		
-  }
-  else if(isblacklist == 3)
-  {
-	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
-	MAC_MATCHES(mac_block, hdr->addr2)||
-	MAC_MATCHES(mac_block, hdr->addr3))
-		return 1;
-	
-  }
-  else if(isblacklist == 4)
-  {
-	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
-	MAC_MATCHES(mac_block, hdr->addr2)||
-	MAC_MATCHES(mac_block, hdr->addr3))
-		return 1;
   // IF any of the Adresses is Whitelisted, SKIP target
   } else {
     if (is_whitelisted(hdr->addr1)) return 0;
@@ -210,7 +206,7 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, u
     
     hdr = (struct ieee_hdr *) sniffed.data;
 	
-	if(isblacklist == 2){
+	if(isblacklist == BLACKLIST_FROM_ESSID){
 		if(hdr->type == IEEE80211_TYPE_BEACON){
 				if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
 				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);

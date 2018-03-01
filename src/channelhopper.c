@@ -259,7 +259,7 @@ static int print_channels_handler(struct nl_msg *msg, void *arg)
 	if (tb_msg[NL80211_ATTR_WIPHY_BANDS]) {
 		nla_for_each_nested(nl_band, tb_msg[NL80211_ATTR_WIPHY_BANDS], rem_band) {
 			if (ctx->last_band != nl_band->nla_type) {
-				//printf("Band %d:\n", nl_band->nla_type + 1);
+	
 				ctx->width_40 = false;
 				ctx->width_80 = false;
 				ctx->width_160 = false;
@@ -300,16 +300,14 @@ static int print_channels_handler(struct nl_msg *msg, void *arg)
 					if (!tb_freq[NL80211_FREQUENCY_ATTR_FREQ])
 						continue;
 					freq = nla_get_u32(tb_freq[NL80211_FREQUENCY_ATTR_FREQ]);
-					//printf("\t* %d MHz [%d] ", freq, ieee80211_frequency_to_channel(freq));
+					
 					chans[lpos_x].chan = ieee80211_frequency_to_channel(freq);
 					chans[lpos_x].hop = 0;
 					lpos_x++;
 
 					if (tb_freq[NL80211_FREQUENCY_ATTR_DISABLED]) {
-						//printf("(disabled)\n");
 						continue;
 					}
-					//printf("\n");
 				}
 			}
 		}
@@ -366,7 +364,7 @@ void channel_sniff()
 			
 			// tag channel
 			channel = pie_data[2];
-			//printf("sniff channel: %d\n", channel);
+
 			for(i=0; i<lpos_x; i++){
 				if(chans[i].chan == channel){
 					chans[i].hop = 1;
@@ -374,78 +372,8 @@ void channel_sniff()
 			}
 		}
 	}
-	
-	printf("channles:\n");
-	for(i=0; i<lpos_x; i++){
-		printf("[%d][%d] ", chans[i].chan, chans[i].hop);
-	}
-	
-	printf("\nsniffer thread end.\n");
+
 }
-
-
-/*
-void ioctl_init_channel_list()
-{
-	char buffer[sizeof(struct iw_range)*3];
-	struct iw_range *range;
-	struct iwreq iwr;
-	
-	int sockfd;
-	int ret, i;
-	int frequency;
-    int chan=0;
-	
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sockfd < 0){
-		printf("WTF? Couldn't open socket. Something is VERY wrong...\n");
-		return;
-	}
-	
-	memset(&iwr, 0, sizeof(iwr));
-	memset(buffer, 0, sizeof(buffer));
-	iwr.u.data.pointer = (caddr_t)buffer;
-	iwr.u.data.length = sizeof(buffer);
-	iwr.u.data.flags = 0;
-	
-	range = (struct iw_range *) buffer;
-	
-	strncpy(iwr.ifr_name, osdep_iface_out, strlen(osdep_iface_in));
-	printf("interface name: %s\n", iwr.ifr_name);
-	
-	ret = ioctl(sockfd, SIOCGIWRANGE, &iwr);
-	if(ret < 0){
-		perror("error siocgiwrange:");
-	}else{
-		
-		printf("Channel number: %d\n", range->num_frequency);
-		printf("Support channels: \n");
-		for(i = 0; i< range->num_frequency; i++){
-			
-			printf("%d : m = %d, e = %d, i = %d, flags = %d \n",i, range->freq[i].m, range->freq[i].e, range->freq[i].i, range->freq[i].flags);
-			frequency = range.freq[i].m;
-			if (frequency > 100000000)
-				frequency/=100000;
-			else if (frequency > 1000000)
-				frequency/=1000;
-			
-			if (frequency > 1000)
-				chan = getChannelFromFrequency(frequency);
-			else 
-				chan = frequency;
-			
-			chans[i] = chan;
-			printf("%d, ", chan);
-		}
-		
-		chans[i] = 0;
-		printf("\n");
-	}
-	
-	// interface_in == interface_out ???
-	
-
-}*/
 
 void nl80211_get_channel_list(char *iface)
 {

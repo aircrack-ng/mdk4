@@ -173,13 +173,6 @@ int main(int argc, char *argv[]) {
 
   srandom(time(NULL));	//Fresh numbers each run
   
-  /*nl80211_init_channel_list();
-  
-  while(1)
-  {
-	  sleep(2);
-  }*/
-  
   //Parsing done, start attacks
   main_loop(cur_attack, cur_options);
   
