@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
 
 #include "probing.h"
 #include "../osdep.h"
@@ -19,6 +20,7 @@ struct probing_options {
   unsigned int speed;
   char *charsets;
   char *proceed;
+  unsigned int channel;
 };
 
 //Global things, shared by packet creation and stats printing
@@ -54,7 +56,9 @@ void probing_longhelp()
 	  "         * l (Lowercase: a-z)\n"
 	  "         * s (Symbols: ASCII)\n"
 	  "      -p <word>\n"
-	  "         Continue bruteforcing, starting at <word>.\n");
+	  "         Continue bruteforcing, starting at <word>.\n"
+	  "      -r <channel>\n"
+	  "         Probe request tests (mod-musket)\n");
 }
 
 
@@ -68,18 +72,19 @@ void *probing_parse(int argc, char *argv[]) {
   popt->speed = 400;
   popt->charsets = NULL;
   popt->proceed = NULL;
+  popt->channel = 0;
   
-  while ((opt = getopt(argc, argv, "e:f:t:s:b:p:r")) != -1) {
+  while ((opt = getopt(argc, argv, "e:f:t:s:b:p:r:")) != -1) {
     switch (opt) {
       case 'e':
-	if (popt->filename || popt->charsets || popt->proceed) { 
-	  printf("Select only one mode please (either -e, -f or -b), not two of them!\n"); return NULL; }
+	if (popt->filename || popt->charsets || popt->proceed || popt->channel) { 
+	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->ssid = malloc(strlen(optarg) + 1);
 	strcpy(popt->ssid, optarg);
       break;
       case 'f':
-	if (popt->ssid || popt->charsets || popt->proceed) { 
-	  printf("Select only one mode please (either -e, -f or -b), not two of them!\n"); return NULL; }
+	if (popt->ssid || popt->charsets || popt->proceed || popt->channel) { 
+	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->filename = malloc(strlen(optarg) + 1);
 	strcpy(popt->filename, optarg);
       break;
@@ -93,23 +98,38 @@ void *probing_parse(int argc, char *argv[]) {
 	*(popt->target) = parse_mac(optarg);
       break;
       case 'b':
-	if (popt->filename || popt->ssid) { 
-	  printf("Select only one mode please (either -e, -f or -b), not two of them!\n"); return NULL; }
+	if (popt->filename || popt->ssid || popt->channel) { 
+	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->charsets = malloc(strlen(optarg) + 1);
 	strcpy(popt->charsets, optarg);
       break;
       case 'p':
-	if (popt->ssid || popt->filename) { 
-	  printf("Select only one mode please (either -e, -f or -b), not two of them!\n"); return NULL; }
+	if (popt->ssid || popt->filename || popt->channel) { 
+	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->proceed = malloc(strlen(optarg) + 1);
 	strcpy(popt->proceed, optarg);
       break;
+	  case 'r':
+	  if(popt->ssid || popt->filename || popt->proceed || popt->charsets || popt->target){
+		printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL;
+	  }
+	  popt->channel = (unsigned int) atoi(optarg);
+	  break;
       default:
 	probing_longhelp();
 	printf("\n\nUnknown option %c\n", opt);
 	return NULL;
     }
   }
+  
+  if((! popt->target) && popt->channel)
+  {
+	printf("Probe request need a target MAC address (-t)\n");
+    return NULL;  
+  }
+  
+  if(popt->channel)
+	osdep_set_channel(popt->channel);
   
   if ((! popt->target) && popt->charsets) {
     printf("Bruteforce modes need a target MAC address (-t)\n");
@@ -125,11 +145,14 @@ void *probing_parse(int argc, char *argv[]) {
     return NULL;
   }
   
-  if (!popt->filename && !popt->ssid && !popt->charsets) {
+  if (!popt->filename && !popt->ssid && !popt->charsets && !popt->channel) {
     probing_longhelp();
     printf("\nOptions are completely missing.\n");
     return NULL;
   }
+  
+  if(popt->channel)
+	popt->proceed = malloc(288);
   
   return (void *) popt;
 }
@@ -166,6 +189,48 @@ unsigned int get_ssid_len(struct ether_addr target) {
 }
 
 
+struct packet create_probe_req(struct probing_options *popt)
+{
+  struct packet probe;
+  unsigned char i,c,type, ssid_len;
+  unsigned char ssid[256] = {0};
+  struct ether_addr apmac = *(popt->target);
+  struct ether_addr stamac = generate_mac(MAC_KIND_RANDOM);
+  struct ether_addr bcast = {.ether_addr_octet = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }};
+  
+  //srand(time(0));  
+  
+  type = random()%2;
+  
+  for (i=0;i<255;i++) {
+	if (type) 
+		c=0x80+(random()%0x80); 
+	else 
+		c=0x41+(random()%25);
+	
+	ssid[i]=c;	
+  }
+  
+  ssid_len = random()%4;
+  
+  if(ssid_len == 0 || ssid_len == 2)
+	ssid[32] = 0;
+  
+  if(type)
+	create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, apmac, stamac, apmac, SE_NULLMAC, 0);
+  else
+	create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, bcast, stamac, apmac, SE_NULLMAC, 0);
+  
+  add_ssid_set(&probe, ssid);
+  add_rate_sets(&probe, 1, 1);
+  
+  memset(popt->proceed, 0, 288);
+  stpcpy(popt->proceed, ssid);
+  
+  return probe;
+}
+
+
 struct packet probing_getpacket(void *options) {
   struct probing_options *popt = (struct probing_options *) options;
   struct packet pkt;
@@ -180,6 +245,12 @@ struct packet probing_getpacket(void *options) {
   
   sleep_till_next_packet(popt->speed);
   src = generate_mac(MAC_KIND_CLIENT);
+  
+  if(popt->channel){
+	pkt = create_probe_req(popt);
+    probes++;
+    return pkt;
+  }
   
   if (popt->ssid) {
     pkt = create_probe(src, popt->ssid, 54);
@@ -244,6 +315,10 @@ void probing_print_stats(void *options) {
   
   if (popt->charsets) {
     printf("\rTrying SSID: %s                                           \n", popt->proceed);
+  }
+  
+  if(popt->channel){
+	printf("\rTrying SSID: %s                                           \n", popt->proceed); 
   }
 }
 
