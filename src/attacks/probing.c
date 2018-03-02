@@ -198,8 +198,6 @@ struct packet create_probe_req(struct probing_options *popt)
   struct ether_addr stamac = generate_mac(MAC_KIND_RANDOM);
   struct ether_addr bcast = {.ether_addr_octet = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }};
   
-  //srand(time(0));  
-  
   type = random()%2;
   
   for (i=0;i<255;i++) {
@@ -210,16 +208,30 @@ struct packet create_probe_req(struct probing_options *popt)
 	
 	ssid[i]=c;	
   }
+
+  type = random()%4;
   
-  ssid_len = random()%4;
-  
-  if(ssid_len == 0 || ssid_len == 2)
-	ssid[32] = 0;
-  
-  if(type)
+  switch(type){
+  case 0:
 	create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, apmac, stamac, apmac, SE_NULLMAC, 0);
-  else
+	break;
+  case 1:
 	create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, bcast, stamac, apmac, SE_NULLMAC, 0);
+	break;
+  case 2:
+    create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, apmac, stamac, bcast, SE_NULLMAC, 0);
+	break;
+  case 3:
+    create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, bcast, stamac, bcast, SE_NULLMAC, 0);
+	break;
+  default:
+	break;
+  }
+
+  type = random()%2;
+	  
+  if(type == 0)
+	ssid[32] = 0;
   
   add_ssid_set(&probe, ssid);
   add_rate_sets(&probe, 1, 1);
@@ -237,6 +249,12 @@ struct packet probing_getpacket(void *options) {
   struct ether_addr src;
   static unsigned int ssidlen = 0, havessidlen = 0, brutelen = 1;
   
+  if(popt->channel){
+	pkt = create_probe_req(popt);
+    probes++;
+    return pkt;
+  }
+  
   if (! havessidlen && popt->target) {
     ssidlen = get_ssid_len(*(popt->target));
     printf("SSID length is %d\n", ssidlen);
@@ -245,12 +263,6 @@ struct packet probing_getpacket(void *options) {
   
   sleep_till_next_packet(popt->speed);
   src = generate_mac(MAC_KIND_CLIENT);
-  
-  if(popt->channel){
-	pkt = create_probe_req(popt);
-    probes++;
-    return pkt;
-  }
   
   if (popt->ssid) {
     pkt = create_probe(src, popt->ssid, 54);
