@@ -419,16 +419,16 @@ void channel_sniff()
 					
 					if(ie_len == essid_len){
 						if(!memcmp(essid_block, pie_data, essid_len)){
-
+			
 							for(i=0; i<lpos_x; i++){
 								if(chans[i].chan == channel){
 									chans[i].hop = 1;
 								}
 							}
-							
-							continue;
 						}
 					}
+					
+					continue;
 					
 				}else if(BLACKLIST_FROM_BSSID == ((struct deauth_options *)global_cur_options)->isblacklist){
 					if(!memcmp(&bssid, &mac_block, sizeof(struct ether_addr))){
@@ -601,6 +601,7 @@ void init_channel_hopper(char *chanlist, int useconds)
 		nl80211_init_channel_list();
 		sniff = 1;
 		pthread_create(&chan_sniffer, NULL, (void*) channel_sniff, NULL);
+		
 #else
 		printf("\nUsing default channels for hopping every %d milliseconds.\n", useconds/1000);
 #endif
