@@ -14,6 +14,9 @@
 #define VERSION "v1"
 #define VERSION_COOL "Awesome!"
 
+void *global_cur_options;
+struct attacks *global_cur_attack;
+
 char *mdk4_help = "MDK 4.0 " VERSION " - \"" VERSION_COOL "\"\n"
 		  "by E7mer@360PegasusTeam, thanks to the aircrack-ng community\n"
 		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
@@ -172,6 +175,9 @@ int main(int argc, char *argv[]) {
   if (!cur_options) return 1;
 
   srandom(time(NULL));	//Fresh numbers each run
+  
+  global_cur_options = cur_options;
+  global_cur_attack = cur_attack;
   
   //Parsing done, start attacks
   main_loop(cur_attack, cur_options);

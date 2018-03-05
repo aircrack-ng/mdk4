@@ -27,6 +27,7 @@
 #endif
 
 #include "osdep.h"
+#include "./attacks/deauth.h"
 
 #define MAX_CHAN_COUNT 128
 
@@ -47,11 +48,19 @@ pthread_t *hopper = NULL;
 pthread_t chan_sniffer = NULL;
 int hopper_useconds = 0;
 volatile int sniff = 0;
+pthread_mutex_t chan_thread_mutex;
 
 extern char *osdep_iface_in;
 extern char *osdep_iface_out;
 
-pthread_mutex_t chan_thread_mutex;
+extern void *global_cur_options;
+extern struct attacks *global_cur_attack;
+
+// deauth
+extern struct ether_addr mac_block;         
+extern unsigned char essid_block[33];
+extern unsigned char essid_len;
+
 
 
 /***********************************nl80211******************************************/
@@ -332,15 +341,53 @@ static int handle_channels(struct nl80211_state *state, struct nl_msg *msg)
 
 /*************************************************************************/
 
+unsigned char get_channel_from_beacon(struct packet *pkt)
+{
+	int ie_type;
+	int ie_len;
+	unsigned char *pie_data;
+	int ie_data_len;
+	unsigned char channel = 0;
+	
+	if(pkt == NULL || pkt->len <= sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed) )
+		return 0;
+	
+	pie_data = pkt->data + sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed);
+	ie_data_len = pkt->len - (sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed));
+	
+	while(ie_data_len > 0){
+		
+		ie_type = pie_data[0];
+		ie_len = pie_data[1];
+		if(ie_type == 0x03){ // Tag Number: DS Parameter Set, (channel), b/g
+			
+			channel = pie_data[2];
+		
+			break;
+		}else if(ie_type == 0x3D){ // Tag Number: HT Information , (channel), 802.11n 
+		
+			channel = pie_data[2];
+		
+			break;
+		}
+		
+		pie_data += (1+1+ie_len);
+		ie_data_len -=(1+1+ie_len);
+	}
+	
+	return channel;
+}
 
 void channel_sniff()
 {
 	struct packet sniffed;
 	struct ieee_hdr *hdr;
+	struct ether_addr bssid;
+	char ssid[32];
 	int ie_type;
 	int ie_len;
 	unsigned char *pie_data;
-	int channel;
+	unsigned char channel;
 	int i;
   
 	while(sniff) {
@@ -353,18 +400,50 @@ void channel_sniff()
     
 		hdr = (struct ieee_hdr *) sniffed.data;
 		if (hdr->type == IEEE80211_TYPE_BEACON){
+			
+			// channel
+			channel = get_channel_from_beacon(&sniffed);
+			
+			// BSSID
+			memcpy(bssid.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
+			
 			pie_data = sniffed.data + sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed);
-			// tag ssid
+			// ssid
 			ie_len = pie_data[1];
-			pie_data += (1 + 1 + ie_len);
+			pie_data += 2;
+			memcpy(ssid, pie_data, ie_len);
 			
-			// tag supported rates
-			ie_len = pie_data[1];
-			pie_data += (1 + 1 + ie_len);
-			
-			// tag channel
-			channel = pie_data[2];
+			if(global_cur_attack->mode_identifier == DEAUTH_MODE){
+				
+				if(BLACKLIST_FROM_ESSID == ((struct deauth_options *)global_cur_options)->isblacklist){
+					
+					if(ie_len == essid_len){
+						if(!memcmp(essid_block, pie_data, essid_len)){
 
+							for(i=0; i<lpos_x; i++){
+								if(chans[i].chan == channel){
+									chans[i].hop = 1;
+								}
+							}
+							
+							continue;
+						}
+					}
+					
+				}else if(BLACKLIST_FROM_BSSID == ((struct deauth_options *)global_cur_options)->isblacklist){
+					if(!memcmp(&bssid, &mac_block, sizeof(struct ether_addr))){
+
+						for(i=0; i<lpos_x; i++){
+							if(chans[i].chan == channel){
+								chans[i].hop = 1;
+							}
+						}
+						
+						break;			
+					}
+				}
+						
+			}
 			for(i=0; i<lpos_x; i++){
 				if(chans[i].chan == channel){
 					chans[i].hop = 1;
@@ -372,7 +451,6 @@ void channel_sniff()
 			}
 		}
 	}
-
 }
 
 void nl80211_get_channel_list(char *iface)
@@ -478,11 +556,6 @@ void nl80211_init_channel_list()
 		chans[p].hop = 0;
 		lpos_x = p;	
 	}
-	
-	printf("channles:\n");
-	for(i=0; i<lpos_x; i++){
-		printf("[%d][%d] ", chans[i].chan, chans[i].hop);
-	}
 }
 
 void channel_hopper()
@@ -497,7 +570,7 @@ void channel_hopper()
 		}
 		sniff = 0;
 	}
-    
+	
     while (1) {
 		if(chans[cclp].hop != 0){
 			osdep_set_channel(chans[cclp].chan);

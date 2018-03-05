@@ -3,6 +3,25 @@
 
 #include "attacks.h"
 
+#define DEAUTH_MODE 'd'
+
+enum blacklist_type{
+	BLACKLIST_FROM_NONE,
+	BLACKLIST_FROM_FILE,
+	BLACKLIST_FROM_ESSID,
+	BLACKLIST_FROM_BSSID,
+	BLACKLIST_FROM_STATION
+	
+};
+
+
+struct deauth_options {
+  char *greylist;
+  enum blacklist_type isblacklist;
+  unsigned int speed;
+  int stealth;
+};
+
 void deauth_shorthelp();
 
 void deauth_longhelp();

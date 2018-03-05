@@ -10,32 +10,16 @@
 #include "../greylist.h"
 #include "../helpers.h"
 
-#define DEAUTH_MODE 'd'
-#define DEAUTH_NAME "Deauthentication and Disassociation"
 
+#define DEAUTH_NAME "Deauthentication and Disassociation"
 #define LIST_REREAD_PERIOD 3
 
-enum blacklist_type{
-	BLACKLIST_FROM_NONE,
-	BLACKLIST_FROM_FILE,
-	BLACKLIST_FROM_ESSID,
-	BLACKLIST_FROM_BSSID,
-	BLACKLIST_FROM_STATION
-	
-};
-
-
-struct deauth_options {
-  char *greylist;
-  enum blacklist_type isblacklist;
-  unsigned int speed;
-  int stealth;
-};
 
 //Global things, shared by packet creation and stats printing
 struct ether_addr bssid, station;
 struct ether_addr mac_block;                 // Mac for d mode, -B, -C, -E
-unsigned char essid_block[ETHER_ADDR_LEN];          // Essid for d mode, -E
+unsigned char essid_block[33] = {0};               // Essid for d mode, -E
+unsigned char essid_len;
 
 void deauth_shorthelp()
 {
@@ -112,7 +96,8 @@ void *deauth_parse(int argc, char *argv[]) {
       break;
 	  case 'E':
 	dopt->isblacklist = BLACKLIST_FROM_ESSID;
-	memcpy(essid_block, optarg, strlen(optarg));
+	essid_len = strlen(optarg);
+	memcpy(essid_block, optarg, essid_len);
 	  break;
 	  case 'B':
 	dopt->isblacklist = BLACKLIST_FROM_BSSID;
@@ -153,9 +138,6 @@ struct ether_addr get_target_bssid()
 		}
 	}
 	
-	printf("SSID: %s, MAC: %0x:%0x:%0x:%0x:%0x:%0x\n", essid_block, mac_block.ether_addr_octet[0], mac_block.ether_addr_octet[1],
-	mac_block.ether_addr_octet[2],mac_block.ether_addr_octet[3],mac_block.ether_addr_octet[4],mac_block.ether_addr_octet[5]);
-
 	return mac_block;
 }
 
