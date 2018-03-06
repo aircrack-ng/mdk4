@@ -147,7 +147,7 @@ void decode_beacon(struct packet *beacon) {
 
   target_ssid = get_ssid(beacon, NULL);
   target_capabilities = get_capabilities(beacon);
-  
+
   printf("Received Beacon from target:\n");
   printf("  SSID        : %s\n", target_ssid);
   printf("  Capabilities: %04X\n", target_capabilities);
@@ -172,7 +172,7 @@ void decode_beacon(struct packet *beacon) {
 
 struct packet build_eapol(struct ether_addr *target, struct ether_addr *client, uint8_t rsn_version, uint64_t rsn_replay) {
   struct packet pkt;
-  
+
   create_ieee_hdr(&pkt, IEEE80211_TYPE_DATA, 't', AUTH_DEFAULT_DURATION, *target, *client, *target, SE_NULLMAC, 0);
   add_llc_header(&pkt, LLC_TYPE_EAPOL);
 
@@ -186,15 +186,15 @@ struct packet build_eapol(struct ether_addr *target, struct ether_addr *client, 
 
 struct packet build_eapol_start_logoff(struct ether_addr *target, struct ether_addr *client, uint8_t start_logoff) {
   struct packet pkt;
-  
+
   create_ieee_hdr(&pkt, IEEE80211_TYPE_DATA, 't', AUTH_DEFAULT_DURATION, *target, *client, *target, SE_NULLMAC, 0);
   add_llc_header(&pkt, LLC_TYPE_EAPOL);
 
   pkt.data[pkt.len] = 0x01;
   pkt.data[pkt.len+1] = start_logoff;
   pkt.data[pkt.len+2] = 0x00;
-  pkt.data[pkt.len+3] = 0x00; 
-  
+  pkt.data[pkt.len+3] = 0x00;
+
   pkt.len += 4;
   return pkt;
 }
@@ -203,19 +203,19 @@ struct packet eapol_logoff(struct ether_addr *target) {
   struct packet sniffed;
   struct ether_addr *bssid = NULL, *client = NULL;
   struct ieee_hdr *hdr;
-  
+
   do {
     sniffed = osdep_read_packet();
     if (sniffed.len == EAPOL_LOGOFF_LEN) continue; //Skip own packets!
     hdr = (struct ieee_hdr *) sniffed.data;
     bssid = get_bssid(&sniffed);
-    
+
     if (hdr->flags & 0x02) {	//FromDS
       client = get_destination(&sniffed);
     } else {
       client = get_source(&sniffed);
     }
-    
+
     if ((hdr->type == IEEE80211_TYPE_DATA) || (hdr->type == IEEE80211_TYPE_QOSDATA)) {
       if (MAC_MATCHES(*bssid, *target)) break;
     }
@@ -236,13 +236,13 @@ struct packet eapol_getpacket(void *options) {
   static struct packet old;
   uint8_t rsn_version = 0;
   uint64_t rsn_replay = 0;
-  
+
   if (need_beacon == 2) { old.len = 0; need_beacon = 1; } //init
 
   sleep_till_next_packet(eopt->speed);
 
   if (eopt->attack_type == 'l') return eapol_logoff(eopt->target);
-  
+
   do {
     sniffed = osdep_read_packet();
 
@@ -266,7 +266,7 @@ struct packet eapol_getpacket(void *options) {
     }
 
     if (! need_beacon) {
-      
+
       if (hdr->type == IEEE80211_TYPE_AUTH) {
 	usable_packet = 1; pack_type = GOT_AUTH;
 	client = get_destination(&sniffed);
@@ -278,7 +278,7 @@ struct packet eapol_getpacket(void *options) {
 	  }
 	}
       }
-      
+
       if (hdr->type == IEEE80211_TYPE_ASSOCRES) {
 	usable_packet = 1; pack_type = GOT_ASSOC;
 	client = get_destination(&sniffed);
@@ -289,7 +289,7 @@ struct packet eapol_getpacket(void *options) {
 	  }
 	}
       }
-      
+
       if ((hdr->type == IEEE80211_TYPE_DATA) || (hdr->type == IEEE80211_TYPE_QOSDATA)) {
 	struct llc_header *llc = (struct llc_header *) (sniffed.data + sizeof(struct ieee_hdr));
 	if (llc->type == htobe16(LLC_TYPE_EAPOL)) {
@@ -343,7 +343,7 @@ struct packet eapol_getpacket(void *options) {
 
 void eapol_print_stats(void *options) {
   struct eapol_options *eopt = (struct eapol_options *) options;
-  
+
   if (eopt->attack_type == 'l') {
     printf("\rLogoff messages sent: %6d    Currently Logging off: ", logoffs); print_mac(cur_logoff); printf("\n");
   } else {

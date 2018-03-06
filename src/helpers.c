@@ -79,7 +79,7 @@ void sleep_till_next_packet(unsigned int pps) {
   static struct timeval *lastvisit = NULL;
   struct timeval now, next, wait;
   unsigned int tbp;
-  
+
   if (!pps) return;
 
   if (! lastvisit) {
@@ -87,16 +87,16 @@ void sleep_till_next_packet(unsigned int pps) {
     gettimeofday(lastvisit, NULL);
     return;
   }
-  
+
   next.tv_sec = lastvisit->tv_sec; next.tv_usec = lastvisit->tv_usec;
   tbp = 1000000 / pps;
   next.tv_usec += tbp;
   if (next.tv_usec > 999999) { next.tv_usec -= 1000000; next.tv_sec++; }
-  
+
   gettimeofday(&now, NULL);
   if (! timeval_subtract(&wait, &next, &now))
     usleep(wait.tv_usec);
-  
+
   gettimeofday(lastvisit, NULL);
 }
 
@@ -108,18 +108,18 @@ char *read_next_line(char *filename, char reset)
     char **pline = &line;
     FILE *file_fp;
     size_t initsize = 1;
-    
+
     if (reset) last_pos = 0;
-    
+
     if ((file_fp = fopen(filename, "r")) == NULL) {
       printf("Cannot open file: %s\n", filename);
       exit(2);
     }
-    
+
     fseek(file_fp, last_pos, SEEK_SET);
     bytesread = getline(pline, &initsize, file_fp);
     line = *pline;
-    
+
     if (bytesread == -1) {
       last_pos = 0;
       free(line);	//Thanks valgrind for getting this BITCH. even if nothing is read from file, memory is still allocated by getline!
@@ -129,10 +129,10 @@ char *read_next_line(char *filename, char reset)
 
     last_pos = ftell(file_fp);
     fclose(file_fp);
-    
+
     //Remove newline if any
     if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = 0x00;
-    
+
     return line;
 }
 
@@ -140,10 +140,10 @@ unsigned char *hex2bin(char *in, int *len) {
   *len = strlen(in) / 2;
   unsigned char *out = malloc(*len);
   int i;
-  
+
   for (i=0; i<*len; i++) {
     sscanf(in + (i*2), "%2hhx", out+i);
   }
-  
+
   return out;
 }

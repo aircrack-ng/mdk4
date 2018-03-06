@@ -51,7 +51,7 @@ void countermeasures_longhelp()
 void *countermeasures_parse(int argc, char *argv[]) {
   int opt;
   struct countermeasures_options *copt = malloc(sizeof(struct countermeasures_options));
-  
+
   copt->target = NULL;
   copt->useqos = 0;
   copt->burst_pause = 10;
@@ -90,7 +90,7 @@ void *countermeasures_parse(int argc, char *argv[]) {
     printf("\n\nTarget must be specified in Random Flood mode!\n");
     return NULL;
   }
-  
+
   return (void *) copt;
 }
 
@@ -108,24 +108,24 @@ struct packet countermeasures_getpacket(void *options) {
   if (!nb_pkt) { sniffed.len = 0; nb_pkt = 1; } //init
 
   sleep_till_next_packet(copt->speed);
-  
+
   if (copt->useqos) {
 
     if (sniffed.len) {	//We got a packet, that has to be sent again a few times :)
 
       sniffed.data[QOS_PACKET_PRIO_POS]++;
       increase_seqno(&sniffed);  //Increase sequence counter to avoid IDS
-      
+
       pkt = sniffed;
 
       if ((sniffed.data[QOS_PACKET_PRIO_POS] & 0x07) == 0x07) {
 	sniffed.len = 0;
       }
-      
+
       return pkt;
-      
+
     } else {
-      
+
       printf("\rWaiting for QoS Data Packet...                      "); fflush(stdout);
 
       while(1) {
@@ -151,9 +151,9 @@ struct packet countermeasures_getpacket(void *options) {
       pkt = sniffed;
       return pkt;
     }
-    
+
   } else {
-    
+
     // pkt.len = (rand() % 246) + 20;
     src = generate_mac(MAC_KIND_CLIENT);
 
@@ -162,14 +162,14 @@ struct packet countermeasures_getpacket(void *options) {
 
     hdr = (struct ieee_hdr *) pkt.data;
     hdr->flags |= 0x40;  //Set Encryption
-    
+
     //random extended IV
     r = random();
     memcpy(pkt.data + 24, &r, 4);
     pkt.data[27] = 0x20;
     r = 0;
     memcpy(pkt.data + 28, &r, 4);
-    
+
     //random data
     for(i=32; i<pkt.len; i++) pkt.data[i] = rand() & 0xFF;
 
@@ -177,7 +177,7 @@ struct packet countermeasures_getpacket(void *options) {
     if (!(nb_pkt % copt->burst_packets)) sleep(copt->burst_pause);
     return pkt;
   }
-  
+
   return pkt;
 }
 

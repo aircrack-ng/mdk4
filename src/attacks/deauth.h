@@ -11,7 +11,7 @@ enum blacklist_type{
 	BLACKLIST_FROM_ESSID,
 	BLACKLIST_FROM_BSSID,
 	BLACKLIST_FROM_STATION
-	
+
 };
 
 

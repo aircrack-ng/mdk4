@@ -37,7 +37,7 @@ struct ether_addr parse_half_mac(char *input)
     }
 
     bytes[3] = bytes[4] = bytes[5] = 0x00;
-    
+
     return mac_p;
 }
 
@@ -89,7 +89,7 @@ struct ether_addr generate_mac(enum mac_kind kind)
 	gmac = generate_valid_mac(0, clients_count);
     if (kind == MAC_KIND_AP)
 	gmac = generate_valid_mac(1, accesspoints_count);
-    
+
     return gmac;
 }
 
@@ -112,7 +112,7 @@ struct ether_addr get_next_mac(struct ether_addr mac_base, struct ether_addr *ma
     static struct ether_addr lowb;
     static struct ether_addr upb;
     struct ether_addr mac_v;
-    
+
     if (pos == -2) {
 	MAC_SET_BCAST(lowb);
 	MAC_SET_BCAST(upb);
@@ -160,6 +160,6 @@ struct ether_addr get_next_mac(struct ether_addr mac_base, struct ether_addr *ma
 void print_mac(struct ether_addr pmac)
 {
     uint8_t *p = pmac.ether_addr_octet;
-    
+
     printf("%02X:%02X:%02X:%02X:%02X:%02X", p[0], p[1], p[2], p[3], p[4], p[5]);
 }

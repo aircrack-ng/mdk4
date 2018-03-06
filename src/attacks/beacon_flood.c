@@ -83,7 +83,7 @@ void *beacon_flood_parse(int argc, char *argv[]) {
   int opt, ch;
   unsigned int i;
   struct beacon_flood_options *bopt = malloc(sizeof(struct beacon_flood_options));
-  
+
   bopt->ssid = NULL;
   bopt->ssid_filename = NULL;
   bopt->mac_ssid_filename = NULL;
@@ -98,7 +98,7 @@ void *beacon_flood_parse(int argc, char *argv[]) {
   bopt->speed = 50;
   bopt->ies = NULL;
   bopt->ies_len = 0;
-  
+
   while ((opt = getopt(argc, argv, "n:f:av:t:w:b:mhc:s:i:")) != -1) {
     switch (opt) {
       case 'n':
@@ -171,7 +171,7 @@ void *beacon_flood_parse(int argc, char *argv[]) {
 	return NULL;
     }
   }
-  
+
   return (void *) bopt;
 }
 
@@ -184,7 +184,7 @@ struct packet beacon_flood_getpacket(void *options) {
   static int freessid = 0, freeline = 0;
   unsigned char bitrate, adhoc;
   static char *line = NULL;
-  
+
   if (bopt->hopto) {
     packsent++;
     if ((packsent == 50) || ((time(NULL) - t_prev) >= 3)) {
@@ -223,9 +223,9 @@ struct packet beacon_flood_getpacket(void *options) {
     ssid = generate_ssid(bopt->all_chars);
     freessid = 1;
   }
-  
+
   encindex = random() % strlen(bopt->encryptions);
-  
+
   if (bopt->bitrates == 'a') {
     if (random() % 2) bitrate = 11;
     else bitrate = 54;
@@ -234,7 +234,7 @@ struct packet beacon_flood_getpacket(void *options) {
   } else {
     bitrate = 54;
   }
-  
+
   if (bopt->type == 2) {
     if (random() % 2) adhoc = 0;
     else adhoc = 1;
@@ -243,17 +243,17 @@ struct packet beacon_flood_getpacket(void *options) {
   } else {
     adhoc = 0;
   }
-  
+
   pkt = create_beacon(bssid, ssid, (uint8_t) curchan, bopt->encryptions[encindex], bitrate, adhoc);
   if (bopt->ies) append_data(&pkt, bopt->ies, bopt->ies_len);
-  
+
   sleep_till_next_packet(bopt->speed);
   return pkt;
 }
 
 void beacon_flood_print_stats(void *options) {
   struct beacon_flood_options *bopt = (struct beacon_flood_options *) options;
-  
+
   printf("\rCurrent MAC: "); print_mac(bssid);
   if (bopt->all_chars) {
     printf(" on Channel %2d              \n", curchan);

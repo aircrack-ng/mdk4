@@ -28,17 +28,17 @@ void dummy_longhelp()
 void *dummy_parse(int argc, char *argv[]) {
   int i;
   struct dummy_options *dopt = malloc(sizeof(struct dummy_options));
-  
+
   for (i=0; i<argc; i++)
     printf("parse: %d: %s\n", i, argv[i]);
-  
+
   if (argc < 3) {
     printf("Missing arguments (need at least 3)!\n");
     return NULL;
   }
-  
+
   dopt->option_count = argc;
-  
+
   return (void *) dopt;
 }
 
@@ -50,17 +50,17 @@ void dummy_check(void *options) {
 struct packet dummy_getpacket(void *options) {
   options = options;
   struct packet pkt;
-  
+
   printf("Build your packet here and return it. NULL data makes mdk4 exit\n");
-   
+
   pkt.len = 0;
-  
+
   return pkt;
 }
 
 void dummy_stats(void *options) {
   options = options;
-  
+
   printf("This is called every second to display statistics\n");
 }
 
@@ -77,6 +77,6 @@ struct attacks load_dummy() {
   this_attack.perform_check = (fps) dummy_check;
   this_attack.get_packet = (fpp) dummy_getpacket;
   this_attack.print_stats = (fps) dummy_stats;
-  
+
   return this_attack;
 }

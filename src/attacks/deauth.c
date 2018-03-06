@@ -57,7 +57,7 @@ void *deauth_parse(int argc, char *argv[]) {
   int opt, speed;
   char *speedstr;
   struct deauth_options *dopt = malloc(sizeof(struct deauth_options));
-  
+
   dopt->greylist = NULL;
   dopt->isblacklist = BLACKLIST_FROM_NONE;
   dopt->speed = 0;
@@ -113,7 +113,7 @@ void *deauth_parse(int argc, char *argv[]) {
 	return NULL;
     }
   }
-  
+
   return (void *) dopt;
 }
 
@@ -122,45 +122,45 @@ struct ether_addr get_target_bssid()
 	struct ether_addr mac_block;
 	struct packet sniffed;
 	struct ieee_hdr *hdr;
-  
+
 	while(1) {
-		
+
 		sniffed = osdep_read_packet();
 		if (sniffed.len == 0) exit(-1);
-		
+
 		hdr = (struct ieee_hdr *) sniffed.data;
 		if (hdr->type == IEEE80211_TYPE_BEACON )
 		{
 			if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
 				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
 				break;
-			}	
+			}
 		}
 	}
-	
+
 	return mac_block;
 }
 
 unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char *greylist) {
   struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
-  
+
   if (! greylist) return 1;	//Always accept when no black/whitelisting selected
-  
+
   // If any of the Adresses is Blacklisted, ACCEPT target
   if (isblacklist == BLACKLIST_FROM_FILE) {
     if (is_blacklisted(hdr->addr1)) return 1;
     if (is_blacklisted(hdr->addr2)) return 1;
     if (is_blacklisted(hdr->addr3)) return 1;
   }
-  else if(isblacklist == BLACKLIST_FROM_ESSID || 
-  isblacklist == BLACKLIST_FROM_BSSID  || 
+  else if(isblacklist == BLACKLIST_FROM_ESSID ||
+  isblacklist == BLACKLIST_FROM_BSSID  ||
   isblacklist == BLACKLIST_FROM_STATION)
   {
-	if(MAC_MATCHES(mac_block, hdr->addr1)|| 
+	if(MAC_MATCHES(mac_block, hdr->addr1)||
 	MAC_MATCHES(mac_block, hdr->addr2)||
 	MAC_MATCHES(mac_block, hdr->addr3))
 		return 1;
-		
+
   // IF any of the Adresses is Whitelisted, SKIP target
   } else {
     if (is_whitelisted(hdr->addr1)) return 0;
@@ -172,7 +172,7 @@ unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char 
     }
     return 1;
   }
-  
+
   return 0;
 }
 
@@ -181,35 +181,35 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, u
   struct packet sniffed;
   struct ieee_hdr *hdr;
   unsigned char wds = 0;
-  
+
   while(1) {
     sniffed = osdep_read_packet();
     if (sniffed.len == 0) exit(-1);
-    
+
     hdr = (struct ieee_hdr *) sniffed.data;
-	
+
 	if(isblacklist == BLACKLIST_FROM_ESSID){
 		if(hdr->type == IEEE80211_TYPE_BEACON){
 				if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
 				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
-			}	
+			}
 		}
 	}
-    
-    if ((hdr->type != IEEE80211_TYPE_DATA) && 
+
+    if ((hdr->type != IEEE80211_TYPE_DATA) &&
 	(hdr->type != IEEE80211_TYPE_QOSDATA) &&
 	(hdr->type != IEEE80211_TYPE_NULL) &&
 	(hdr->type != IEEE80211_TYPE_AUTH) &&
 	(hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
 	(hdr->type != IEEE80211_TYPE_ASSOCRES) &&
-	(hdr->type != IEEE80211_TYPE_REASSOCREQ)) 
+	(hdr->type != IEEE80211_TYPE_REASSOCREQ))
 		continue;
-		
+
     if (stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
 
     if (accept_target(&sniffed, isblacklist, greylist)) break;
   }
-  
+
   switch (hdr->flags & 0x03) {
     case 0x03: //WDS
       wds = 1;
@@ -229,7 +229,7 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, u
       MAC_COPY(*ap, hdr->addr3);
     break;
   }
-  
+
   set_seqno(NULL, get_seqno(&sniffed));  // Eff you, WIDS
 
   return wds;
@@ -240,7 +240,7 @@ struct packet deauth_getpacket(void *options) {
   struct deauth_options *dopt = (struct deauth_options *) options;
   static time_t t_prev = 0;
   static unsigned char wds, state = 0;
-  
+
   if (dopt->greylist) {
     if (t_prev == 0) {
       printf("Periodically re-reading blacklist/whitelist every %d seconds\n\n", LIST_REREAD_PERIOD);
@@ -250,9 +250,9 @@ struct packet deauth_getpacket(void *options) {
       load_greylist(dopt->isblacklist, dopt->greylist);
     }
   }
-  
+
   if (dopt->speed) sleep_till_next_packet(dopt->speed);
-  
+
   switch (state) {
     case 0:
       wds = get_new_target(&station, &bssid, dopt->isblacklist, dopt->greylist, dopt->stealth);
@@ -290,10 +290,10 @@ struct packet deauth_getpacket(void *options) {
 void deauth_print_stats(void *options) {
   int chan = osdep_get_channel();
   options = options; //Avoid unused warning
-  
+
   printf("\rDisconnecting "); print_mac(station);
   printf(" from "); print_mac(bssid);
-  
+
   if (chan) {
     printf(" on channel %d\n", chan);
   } else {

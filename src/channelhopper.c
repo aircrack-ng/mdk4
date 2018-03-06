@@ -57,7 +57,7 @@ extern void *global_cur_options;
 extern struct attacks *global_cur_attack;
 
 // deauth
-extern struct ether_addr mac_block;         
+extern struct ether_addr mac_block;
 extern unsigned char essid_block[33];
 extern unsigned char essid_len;
 
@@ -261,14 +261,14 @@ static int print_channels_handler(struct nl_msg *msg, void *arg)
 	struct nlattr *nl_band;
 	struct nlattr *nl_freq;
 	int rem_band, rem_freq;
-	
+
 
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
 	if (tb_msg[NL80211_ATTR_WIPHY_BANDS]) {
 		nla_for_each_nested(nl_band, tb_msg[NL80211_ATTR_WIPHY_BANDS], rem_band) {
 			if (ctx->last_band != nl_band->nla_type) {
-	
+
 				ctx->width_40 = false;
 				ctx->width_80 = false;
 				ctx->width_160 = false;
@@ -309,7 +309,7 @@ static int print_channels_handler(struct nl_msg *msg, void *arg)
 					if (!tb_freq[NL80211_FREQUENCY_ATTR_FREQ])
 						continue;
 					freq = nla_get_u32(tb_freq[NL80211_FREQUENCY_ATTR_FREQ]);
-					
+
 					chans[lpos_x].chan = ieee80211_frequency_to_channel(freq);
 					chans[lpos_x].hop = 0;
 					lpos_x++;
@@ -348,33 +348,33 @@ unsigned char get_channel_from_beacon(struct packet *pkt)
 	unsigned char *pie_data;
 	int ie_data_len;
 	unsigned char channel = 0;
-	
+
 	if(pkt == NULL || pkt->len <= sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed) )
 		return 0;
-	
+
 	pie_data = pkt->data + sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed);
 	ie_data_len = pkt->len - (sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed));
-	
+
 	while(ie_data_len > 0){
-		
+
 		ie_type = pie_data[0];
 		ie_len = pie_data[1];
 		if(ie_type == 0x03){ // Tag Number: DS Parameter Set, (channel), b/g
-			
+
 			channel = pie_data[2];
-		
+
 			break;
-		}else if(ie_type == 0x3D){ // Tag Number: HT Information , (channel), 802.11n 
-		
+		}else if(ie_type == 0x3D){ // Tag Number: HT Information , (channel), 802.11n
+
 			channel = pie_data[2];
-		
+
 			break;
 		}
-		
+
 		pie_data += (1+1+ie_len);
 		ie_data_len -=(1+1+ie_len);
 	}
-	
+
 	return channel;
 }
 
@@ -389,7 +389,7 @@ void channel_sniff()
 	unsigned char *pie_data;
 	unsigned char channel;
 	int i;
-  
+
 	while(sniff) {
 
 		sniffed = osdep_read_packet();
@@ -397,29 +397,29 @@ void channel_sniff()
 			usleep(10);
 			continue;
 		}
-    
+
 		hdr = (struct ieee_hdr *) sniffed.data;
 		if (hdr->type == IEEE80211_TYPE_BEACON){
-			
+
 			// channel
 			channel = get_channel_from_beacon(&sniffed);
-			
+
 			// BSSID
 			memcpy(bssid.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
-			
+
 			pie_data = sniffed.data + sizeof(struct ieee_hdr) + sizeof(struct beacon_fixed);
 			// ssid
 			ie_len = pie_data[1];
 			pie_data += 2;
 			memcpy(ssid, pie_data, ie_len);
-			
+
 			if(global_cur_attack->mode_identifier == DEAUTH_MODE){
-				
+
 				if(BLACKLIST_FROM_ESSID == ((struct deauth_options *)global_cur_options)->isblacklist){
-					
+
 					if(ie_len == essid_len){
 						if(!memcmp(essid_block, pie_data, essid_len)){
-			
+
 							for(i=0; i<lpos_x; i++){
 								if(chans[i].chan == channel){
 									chans[i].hop = 1;
@@ -427,9 +427,9 @@ void channel_sniff()
 							}
 						}
 					}
-					
+
 					continue;
-					
+
 				}else if(BLACKLIST_FROM_BSSID == ((struct deauth_options *)global_cur_options)->isblacklist){
 					if(!memcmp(&bssid, &mac_block, sizeof(struct ether_addr))){
 
@@ -438,11 +438,11 @@ void channel_sniff()
 								chans[i].hop = 1;
 							}
 						}
-						
-						break;			
+
+						break;
 					}
 				}
-						
+
 			}
 			for(i=0; i<lpos_x; i++){
 				if(chans[i].chan == channel){
@@ -460,45 +460,45 @@ void nl80211_get_channel_list(char *iface)
 	struct nl_cb *cb;
 	struct nl_cb *s_cb;
 	struct nl_msg *msg;
-	
+
 	lpos_x = 0;
-	
+
 	err = nl80211_init(&nlstate);
 	if (err){
 		fprintf(stderr, "failed to initialize nl80211.\n");
 		return;
 	}
-	
+
 	msg = nlmsg_alloc();
 	if (!msg) {
 		fprintf(stderr, "failed to allocate netlink message\n");
 		return;
 	}
-	
+
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	s_cb = nl_cb_alloc(NL_CB_DEFAULT);
 	if (!cb || !s_cb) {
 		fprintf(stderr, "failed to allocate netlink callbacks\n");
 		goto out;
 	}
-	
+
 	state = &nlstate;
 
 	genlmsg_put(msg, 0, 0, state->nl80211_id, 0, 0, NL80211_CMD_GET_WIPHY, 0);
-	
+
 	NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, if_nametoindex(iface));
-	
+
 	err = handle_channels(state, msg);
 	if (err){
 		goto out;
 	};
-	
+
 	nl_socket_set_cb(state->nl_sock, s_cb);
 	err = nl_send_auto_complete(state->nl_sock, msg);
 	if (err < 0){
 		goto out;
 	};
-	
+
 	err = 1;
 	nl_cb_err(cb, NL_CB_CUSTOM, error_handler, &err);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, finish_handler, &err);
@@ -507,7 +507,7 @@ void nl80211_get_channel_list(char *iface)
 
 	while (err > 0)
 		nl_recvmsgs(state->nl_sock, cb);
-	
+
 
 nla_put_failure:
 out:
@@ -515,33 +515,33 @@ out:
 	nl_cb_put(s_cb);
 	nlmsg_free(msg);
 
-	nl80211_cleanup(&nlstate);	
+	nl80211_cleanup(&nlstate);
 }
 
 void nl80211_init_channel_list()
 {
 	int i=0, j=0, p=0;
-	
+
 	nl80211_get_channel_list(osdep_iface_out);
 	chans[lpos_x].chan = 0;
 	chans[lpos_x].hop = 0;
-	
-	
+
+
 	if(0!=strcmp(osdep_iface_out, osdep_iface_in)){
 		for(i = 0; i<= lpos_x; i++){
 			chans_out[i] = chans[i].chan;
 		}
-		
+
 		lpos_out = lpos_x;
-	
+
 		nl80211_get_channel_list(osdep_iface_in);
 		for(i = 0; i<= lpos_x; i++){
 			chans_in[i] = chans[i].chan;
 		}
-		
+
 		lpos_in = lpos_x;
 		p = 0;
-		
+
 		for(i = 0; i< lpos_out; i++){
 			for(j = 0; j< lpos_in; j++){
 				if(chans_out[i] == chans_in[j]){
@@ -551,10 +551,10 @@ void nl80211_init_channel_list()
 				}
 			}
 		}
-		
+
 		chans[p].chan = 0;
 		chans[p].hop = 0;
-		lpos_x = p;	
+		lpos_x = p;
 	}
 }
 
@@ -562,7 +562,7 @@ void channel_hopper()
 {
     // A simple thread to hop channels
     int cclp = 0, i;
-	
+
 	if(sniff){
 		for(i=0; i<lpos_x; i++){
 			osdep_set_channel(chans[i].chan);
@@ -570,7 +570,7 @@ void channel_hopper()
 		}
 		sniff = 0;
 	}
-	
+
     while (1) {
 		if(chans[cclp].hop != 0){
 			osdep_set_channel(chans[cclp].chan);
@@ -594,14 +594,14 @@ void init_channel_hopper(char *chanlist, int useconds)
     if (hopper) {
       printf("There is already a channel hopper running, skipping this one!\n");
     }
-    
+
     if (chanlist == NULL) {    // No channel list given - using defaults
 #ifdef __linux__
 		printf("\nUsing sniffed channels for hopping every %d milliseconds.\n", useconds/1000);
 		nl80211_init_channel_list();
 		sniff = 1;
 		pthread_create(&chan_sniffer, NULL, (void*) channel_sniff, NULL);
-		
+
 #else
 		printf("\nUsing default channels for hopping every %d milliseconds.\n", useconds/1000);
 #endif
@@ -622,7 +622,7 @@ void init_channel_hopper(char *chanlist, int useconds)
 	chans[lpos].chan = 0;
 	chans[lpos].hop = 0;
     }
-	
+
     hopper_useconds = useconds;
     hopper = malloc(sizeof(pthread_t));
     pthread_create(hopper, NULL, (void *) channel_hopper, NULL);
