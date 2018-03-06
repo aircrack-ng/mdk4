@@ -9,7 +9,7 @@ pthread_mutex_t clist_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct clist *search_status(struct clist *c, int desired_status)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clist *first = c;
 
@@ -28,7 +28,7 @@ struct clist *search_status(struct clist *c, int desired_status)
 struct clistwidsclient *search_status_widsclient(struct clistwidsclient *c, int desired_status, int desired_channel)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clistwidsclient *first = c;
 
@@ -39,7 +39,7 @@ struct clistwidsclient *search_status_widsclient(struct clistwidsclient *c, int 
     }
     c = c->next;
   } while (c != first);
-  
+
   pthread_mutex_unlock(&clist_mutex);
   return NULL;
 }
@@ -47,7 +47,7 @@ struct clistwidsclient *search_status_widsclient(struct clistwidsclient *c, int 
 struct clist *search_data(struct clist *c, unsigned char *desired_data, int data_len)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clist *first = c;
 
@@ -68,7 +68,7 @@ struct clist *search_data(struct clist *c, unsigned char *desired_data, int data
 struct clistwidsap *search_bssid(struct clistwidsap *c, struct ether_addr desired_bssid)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clistwidsap *first = c;
 
@@ -87,7 +87,7 @@ struct clistwidsap *search_bssid(struct clistwidsap *c, struct ether_addr desire
 struct clistwidsclient *search_client(struct clistwidsclient *c, struct ether_addr mac)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clistwidsclient *first = c;
 
@@ -106,7 +106,7 @@ struct clistwidsclient *search_client(struct clistwidsclient *c, struct ether_ad
 struct clistauthdos *search_ap(struct clistauthdos *c, struct ether_addr ap)
 {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clistauthdos *first = c;
 
@@ -125,7 +125,7 @@ struct clistauthdos *search_ap(struct clistauthdos *c, struct ether_addr ap)
 struct clist *add_to_clist(struct clist *c, unsigned char *data, int status, int data_len)
 {
   pthread_mutex_lock(&clist_mutex);
-  
+
   struct clist *new_item = (struct clist *) malloc(sizeof(struct clist));
   new_item->data = malloc(data_len);
   new_item->data_len = data_len;
@@ -136,7 +136,7 @@ struct clist *add_to_clist(struct clist *c, unsigned char *data, int status, int
   } else {
     new_item->next = new_item;
   }
-  
+
   memcpy(new_item->data, data, data_len);
   new_item->status = status;
 
@@ -147,7 +147,7 @@ struct clist *add_to_clist(struct clist *c, unsigned char *data, int status, int
 struct clistwidsap *add_to_clistwidsap(struct clistwidsap *c, struct ether_addr bssid, int channel, uint16_t capa, char *ssid)
 {
   pthread_mutex_lock(&clist_mutex);
-  
+
   struct clistwidsap *new_item = (struct clistwidsap *) malloc(sizeof(struct clistwidsap));
   new_item->bssid = bssid;
 
@@ -157,7 +157,7 @@ struct clistwidsap *add_to_clistwidsap(struct clistwidsap *c, struct ether_addr 
   } else {
     new_item->next = new_item;
   }
-  
+
   new_item->channel = channel;
   new_item->capa = capa;
   new_item->ssid = malloc(strlen(ssid) + 1);
@@ -170,7 +170,7 @@ struct clistwidsap *add_to_clistwidsap(struct clistwidsap *c, struct ether_addr 
 struct clistwidsclient *add_to_clistwidsclient(struct clistwidsclient *c, struct ether_addr mac, int status, unsigned char *data, int data_len, uint16_t sequence, struct clistwidsap *bssid)
 {
   pthread_mutex_lock(&clist_mutex);
-  
+
   struct clistwidsclient *new_item = (struct clistwidsclient *) malloc(sizeof(struct clistwidsclient));
   new_item->mac = mac;
   new_item->data = malloc(data_len);
@@ -181,7 +181,7 @@ struct clistwidsclient *add_to_clistwidsclient(struct clistwidsclient *c, struct
   } else {
     new_item->next = new_item;
   }
-  
+
   memcpy(new_item->data, data, data_len);
   new_item->status = status;
   new_item->data_len = data_len;
@@ -196,7 +196,7 @@ struct clistwidsclient *add_to_clistwidsclient(struct clistwidsclient *c, struct
 struct clistauthdos *add_to_clistauthdos(struct clistauthdos *c, struct ether_addr ap, unsigned char status, unsigned int responses, unsigned int missing)
 {
   pthread_mutex_lock(&clist_mutex);
-  
+
   struct clistauthdos *new_item = (struct clistauthdos *) malloc(sizeof(struct clistauthdos));
   new_item->ap = ap;
 
@@ -206,7 +206,7 @@ struct clistauthdos *add_to_clistauthdos(struct clistauthdos *c, struct ether_ad
   } else {
     new_item->next = new_item;
   }
-  
+
   new_item->status = status;
   new_item->responses = responses;
   new_item->missing = missing;
@@ -217,7 +217,7 @@ struct clistauthdos *add_to_clistauthdos(struct clistauthdos *c, struct ether_ad
 
 struct clistauthdos *search_authdos_status(struct clistauthdos *c, int desired_status) {
   if (!c) return NULL;
-  
+
   pthread_mutex_lock(&clist_mutex);
   struct clistauthdos *first = c;
 

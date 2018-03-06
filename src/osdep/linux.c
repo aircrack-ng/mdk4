@@ -518,7 +518,7 @@ static int linux_set_rate(struct wif *wi, int rate)
     else
         strncpy( wrq.ifr_name, wi_get_ifname(wi), IFNAMSIZ );
     wrq.ifr_name[IFNAMSIZ-1] = 0;
-		
+
     wrq.u.bitrate.value = rate;
     wrq.u.bitrate.fixed = 1;
 
@@ -1116,7 +1116,7 @@ static int linux_set_channel(struct wif *wi, int channel)
     memset( &wrq, 0, sizeof( struct iwreq ) );
     strncpy( wrq.ifr_name, wi_get_ifname(wi), IFNAMSIZ );
     wrq.ifr_name[IFNAMSIZ-1] = 0;
-    
+
     wrq.u.freq.m = (double) channel;
     wrq.u.freq.e = (double) 0;
 
@@ -1171,7 +1171,7 @@ static int linux_set_freq(struct wif *wi, int freq)
     memset( &wrq, 0, sizeof( struct iwreq ) );
     strncpy( wrq.ifr_name, wi_get_ifname(wi), IFNAMSIZ );
     wrq.ifr_name[IFNAMSIZ-1] = 0;
-    
+
     wrq.u.freq.m = (double) freq*100000;
     wrq.u.freq.e = (double) 1;
 

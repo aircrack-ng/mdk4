@@ -73,17 +73,17 @@ void *probing_parse(int argc, char *argv[]) {
   popt->charsets = NULL;
   popt->proceed = NULL;
   popt->channel = 0;
-  
+
   while ((opt = getopt(argc, argv, "e:f:t:s:b:p:r:")) != -1) {
     switch (opt) {
       case 'e':
-	if (popt->filename || popt->charsets || popt->proceed || popt->channel) { 
+	if (popt->filename || popt->charsets || popt->proceed || popt->channel) {
 	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->ssid = malloc(strlen(optarg) + 1);
 	strcpy(popt->ssid, optarg);
       break;
       case 'f':
-	if (popt->ssid || popt->charsets || popt->proceed || popt->channel) { 
+	if (popt->ssid || popt->charsets || popt->proceed || popt->channel) {
 	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->filename = malloc(strlen(optarg) + 1);
 	strcpy(popt->filename, optarg);
@@ -92,19 +92,19 @@ void *probing_parse(int argc, char *argv[]) {
 	popt->speed = (unsigned int) atoi(optarg);
       break;
       case 't':
-	if (popt->ssid) { 
+	if (popt->ssid) {
 	  printf("Targets (-t) are not needed for this Probing mode\n"); return NULL; }
 	popt->target = malloc(sizeof(struct ether_addr));
 	*(popt->target) = parse_mac(optarg);
       break;
       case 'b':
-	if (popt->filename || popt->ssid || popt->channel) { 
+	if (popt->filename || popt->ssid || popt->channel) {
 	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->charsets = malloc(strlen(optarg) + 1);
 	strcpy(popt->charsets, optarg);
       break;
       case 'p':
-	if (popt->ssid || popt->filename || popt->channel) { 
+	if (popt->ssid || popt->filename || popt->channel) {
 	  printf("Select only one mode please (either -e, -f, -b or -r), not two of them!\n"); return NULL; }
 	popt->proceed = malloc(strlen(optarg) + 1);
 	strcpy(popt->proceed, optarg);
@@ -121,39 +121,39 @@ void *probing_parse(int argc, char *argv[]) {
 	return NULL;
     }
   }
-  
+
   if((! popt->target) && popt->channel)
   {
 	printf("Probe request need a target MAC address (-t)\n");
-    return NULL;  
+    return NULL;
   }
-  
+
   if(popt->channel)
 	osdep_set_channel(popt->channel);
-  
+
   if ((! popt->target) && popt->charsets) {
     printf("Bruteforce modes need a target MAC address (-t)\n");
     return NULL;
   }
-  
+
   if ((! popt->target) && popt->filename) {
     printf("No target (-t) specified, will display ALL responses!\n");
   }
-  
+
   if ((! popt->charsets) && popt->proceed) {
     printf("You need to specify a character set (-b)\n");
     return NULL;
   }
-  
+
   if (!popt->filename && !popt->ssid && !popt->charsets && !popt->channel) {
     probing_longhelp();
     printf("\nOptions are completely missing.\n");
     return NULL;
   }
-  
+
   if(popt->channel)
 	popt->proceed = malloc(288);
-  
+
   return (void *) popt;
 }
 
@@ -164,14 +164,14 @@ unsigned int get_ssid_len(struct ether_addr target) {
   struct ether_addr *ap;
   char *ssid;
   unsigned char ssidlen;
-  
+
   printf("Waiting for a beacon frame from target to get its SSID length.\n");
-  
+
   while(1) {
     pkt = osdep_read_packet();
     if (pkt.len == 0) exit(-1);
     hdr = (struct ieee_hdr *) pkt.data;
-    
+
     if (hdr->type == IEEE80211_TYPE_BEACON) {
       ap = get_source(&pkt);
       if (MAC_MATCHES(*ap, target)) {
@@ -197,20 +197,20 @@ struct packet create_probe_req(struct probing_options *popt)
   struct ether_addr apmac = *(popt->target);
   struct ether_addr stamac = generate_mac(MAC_KIND_RANDOM);
   struct ether_addr bcast = {.ether_addr_octet = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }};
-  
+
   type = random()%2;
-  
+
   for (i=0;i<255;i++) {
-	if (type) 
-		c=0x80+(random()%0x80); 
-	else 
+	if (type)
+		c=0x80+(random()%0x80);
+	else
 		c=0x41+(random()%25);
-	
-	ssid[i]=c;	
+
+	ssid[i]=c;
   }
 
   type = random()%4;
-  
+
   switch(type){
   case 0:
 	create_ieee_hdr(&probe, IEEE80211_TYPE_PROBEREQ, 'a', 0, apmac, stamac, apmac, SE_NULLMAC, 0);
@@ -229,16 +229,16 @@ struct packet create_probe_req(struct probing_options *popt)
   }
 
   type = random()%2;
-	  
+
   if(type == 0)
 	ssid[32] = 0;
-  
+
   add_ssid_set(&probe, ssid);
   add_rate_sets(&probe, 1, 1);
-  
+
   memset(popt->proceed, 0, 288);
   stpcpy(popt->proceed, ssid);
-  
+
   return probe;
 }
 
@@ -248,22 +248,22 @@ struct packet probing_getpacket(void *options) {
   struct packet pkt;
   struct ether_addr src;
   static unsigned int ssidlen = 0, havessidlen = 0, brutelen = 1;
-  
+
   if(popt->channel){
 	pkt = create_probe_req(popt);
     probes++;
     return pkt;
   }
-  
+
   if (! havessidlen && popt->target) {
     ssidlen = get_ssid_len(*(popt->target));
     printf("SSID length is %d\n", ssidlen);
     havessidlen = 1;
   }
-  
+
   sleep_till_next_packet(popt->speed);
   src = generate_mac(MAC_KIND_CLIENT);
-  
+
   if (popt->ssid) {
     pkt = create_probe(src, popt->ssid, 54);
     probes++;
@@ -306,7 +306,7 @@ struct packet probing_getpacket(void *options) {
     pkt = create_probe(src, popt->proceed, 54);
     return pkt;
   }
-  
+
   pkt.len = 0; return pkt;
 }
 
@@ -314,23 +314,23 @@ struct packet probing_getpacket(void *options) {
 void probing_print_stats(void *options) {
   struct probing_options *popt = (struct probing_options *) options;
   unsigned int perc;
-  
+
   if (popt->ssid) {
     perc = ((answers * 100) / probes);
     printf("\rAP responded on %d of %d probes (%d percent)                  \n", answers, probes, perc);
     answers = probes = 0;
   }
-  
+
   if (popt->filename) {
     printf("\rTrying SSID: %s                                           \n", filessid);
   }
-  
+
   if (popt->charsets) {
     printf("\rTrying SSID: %s                                           \n", popt->proceed);
   }
-  
+
   if(popt->channel){
-	printf("\rTrying SSID: %s                                           \n", popt->proceed); 
+	printf("\rTrying SSID: %s                                           \n", popt->proceed);
   }
 }
 
@@ -341,20 +341,20 @@ void probing_sniffer(void *options) {
   struct ether_addr *dup, dupdetect, *ap;
   struct ieee_hdr *hdr;
   char *ssid;
-  
+
   while(1) {
     pkt = osdep_read_packet();
     if (pkt.len == 0) exit(-1);
     hdr = (struct ieee_hdr *) pkt.data;
-    
+
     if (popt->ssid) { //Skip duplicates only in non-bruteforce modes
       dup = get_destination(&pkt);
       if (MAC_MATCHES(dupdetect, *dup)) continue;  //Duplicate ignored
       MAC_COPY(dupdetect, *dup);
-      
+
       if (hdr->type == IEEE80211_TYPE_PROBERES) answers++;
     }
-    
+
     if (popt->filename || popt->charsets) {
       ap = get_source(&pkt);
       if (hdr->type == IEEE80211_TYPE_PROBERES) {
@@ -377,7 +377,7 @@ void probing_sniffer(void *options) {
 
 void probing_perform_check(void *options) {
   static pthread_t *sniffer = NULL;
-  
+
   if (!sniffer) {
     sniffer = malloc(sizeof(pthread_t));
     pthread_create(sniffer, NULL, (void *) probing_sniffer, (void *) options);
