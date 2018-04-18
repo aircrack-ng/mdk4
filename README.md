@@ -15,9 +15,9 @@ MDK4 is licenced under the GPLv2 or later.
 
 # Installation
 
-cd /mdk4-master
-make
-sudo make install
+		cd /mdk4-master
+		make
+		sudo make install
 
 
 # Features
@@ -31,36 +31,36 @@ sudo make install
 
 # ATTACK MODE
 
-ATTACK MODE b: Beacon Flooding
-  Sends beacon frames to show fake APs at clients.
-  This can sometimes crash network scanners and even drivers!
-ATTACK MODE a: Authentication Denial-Of-Service
-  Sends authentication frames to all APs found in range.
-  Too many clients can freeze or reset several APs.
-ATTACK MODE p: SSID Probing and Bruteforcing
-  Probes APs and checks for answer, useful for checking if SSID has
-  been correctly decloaked and if AP is in your sending range.
-  Bruteforcing of hidden SSIDs with or without a wordlist is also available.
-ATTACK MODE d: Deauthentication and Disassociation
-  Sends deauthentication and disassociation packets to stations
-  based on data traffic to disconnect all clients from an AP.
-ATTACK MODE m: Michael Countermeasures Exploitation
-  Sends random packets or re-injects duplicates on another QoS queue
-  to provoke Michael Countermeasures on TKIP APs.
-  AP will then shutdown for a whole minute, making this an effective DoS.
-ATTACK MODE e: EAPOL Start and Logoff Packet Injection
-  Floods an AP with EAPOL Start frames to keep it busy with fake sessions
-  and thus disables it to handle any legitimate clients.
-  Or logs off clients by injecting fake EAPOL Logoff messages.
-ATTACK MODE s: Attacks for IEEE 802.11s mesh networks
-  Various attacks on link management and routing in mesh networks.
-  Flood neighbors and routes, create black holes and divert traffic!
-ATTACK MODE w: WIDS Confusion
-  Confuse/Abuse Intrusion Detection and Prevention Systems by
-  cross-connecting clients to multiple WDS nodes or fake rogue APs.
-ATTACK MODE f: Packet Fuzzer
-  A simple packet fuzzer with multiple packet sources
-  and a nice set of modifiers. Be careful!
+<br>ATTACK MODE b: Beacon Flooding
+		Sends beacon frames to show fake APs at clients.
+		This can sometimes crash network scanners and even drivers!
+<br>ATTACK MODE a: Authentication Denial-Of-Service
+		Sends authentication frames to all APs found in range.
+		Too many clients can freeze or reset several APs.
+<br>ATTACK MODE p: SSID Probing and Bruteforcing
+		Probes APs and checks for answer, useful for checking if SSID has
+		been correctly decloaked and if AP is in your sending range.
+		Bruteforcing of hidden SSIDs with or without a wordlist is also available.
+<br>ATTACK MODE d: Deauthentication and Disassociation
+		Sends deauthentication and disassociation packets to stations
+		based on data traffic to disconnect all clients from an AP.
+<br>ATTACK MODE m: Michael Countermeasures Exploitation
+		Sends random packets or re-injects duplicates on another QoS queue
+		to provoke Michael Countermeasures on TKIP APs.
+		AP will then shutdown for a whole minute, making this an effective DoS.
+<br>ATTACK MODE e: EAPOL Start and Logoff Packet Injection
+		Floods an AP with EAPOL Start frames to keep it busy with fake sessions
+		and thus disables it to handle any legitimate clients.
+		Or logs off clients by injecting fake EAPOL Logoff messages.
+<br>ATTACK MODE s: Attacks for IEEE 802.11s mesh networks
+		Various attacks on link management and routing in mesh networks.
+		Flood neighbors and routes, create black holes and divert traffic!
+<br>ATTACK MODE w: WIDS Confusion
+		Confuse/Abuse Intrusion Detection and Prevention Systems by
+		cross-connecting clients to multiple WDS nodes or fake rogue APs.
+<br>ATTACK MODE f: Packet Fuzzer
+		A simple packet fuzzer with multiple packet sources
+		and a nice set of modifiers. Be careful!
 
 # Usage
 
@@ -74,8 +74,8 @@ Try mdk4 --help <attack_mode> for info about one attack only
 FULL OPTIONS:
 
 ATTACK MODE b: Beacon Flooding
-  Sends beacon frames to generate fake APs at clients.
-  This can sometimes crash network scanners and drivers!
+		Sends beacon frames to generate fake APs at clients.
+		This can sometimes crash network scanners and drivers!
       -n <ssid>
          Use SSID <ssid> instead of randomly generated ones
       -a
@@ -111,8 +111,8 @@ ATTACK MODE b: Beacon Flooding
          Set speed in packets per second (Default: 50)
 
 ATTACK MODE a: Authentication Denial-Of-Service
-  Sends authentication frames to all APs found in range.
-  Too many clients can freeze or reset several APs.
+		Sends authentication frames to all APs found in range.
+		Too many clients can freeze or reset several APs.
       -a <ap_mac>
          Only test the specified AP
       -m
@@ -124,9 +124,9 @@ ATTACK MODE a: Authentication Denial-Of-Service
          Set speed in packets per second (Default: unlimited)
 
 ATTACK MODE p: SSID Probing and Bruteforcing
-  Probes APs and checks for answer, useful for checking if SSID has
-  been correctly decloaked and if AP is in your sending range.
-  Bruteforcing of hidden SSIDs with or without a wordlist is also available.
+		Probes APs and checks for answer, useful for checking if SSID has
+		been correctly decloaked and if AP is in your sending range.
+		Bruteforcing of hidden SSIDs with or without a wordlist is also available.
       -e <ssid>
          SSID to probe for
       -f <filename>
@@ -148,8 +148,8 @@ ATTACK MODE p: SSID Probing and Bruteforcing
          Probe request tests (mod-musket)
 
 ATTACK MODE d: Deauthentication and Disassociation
-  Sends deauthentication and disassociation packets to stations
-  based on data traffic to disconnect all clients from an AP.
+		Sends deauthentication and disassociation packets to stations
+		based on data traffic to disconnect all clients from an AP.
       -w <filename>
          Read file containing MACs not to care about (Whitelist mode)
       -b <filename>
@@ -171,9 +171,9 @@ ATTACK MODE d: Deauthentication and Disassociation
          Specify a station MAC address to block.
 
 ATTACK MODE m: Michael Countermeasures Exploitation
-  Sends random packets or re-injects duplicates on another QoS queue
-  to provoke Michael Countermeasures on TKIP APs.
-  AP will then shutdown for a whole minute, making this an effective DoS.
+		Sends random packets or re-injects duplicates on another QoS queue
+		to provoke Michael Countermeasures on TKIP APs.
+		AP will then shutdown for a whole minute, making this an effective DoS.
       -t <bssid>
          Set target AP, that runs TKIP encryption
       -j
@@ -187,9 +187,9 @@ ATTACK MODE m: Michael Countermeasures Exploitation
          Send <count> random packets per burst (Default: 70)
 
 ATTACK MODE e: EAPOL Start and Logoff Packet Injection
-  Floods an AP with EAPOL Start frames to keep it busy with fake sessions
-  and thus disables it to handle any legitimate clients.
-  Or logs off clients by injecting fake EAPOL Logoff messages.
+		Floods an AP with EAPOL Start frames to keep it busy with fake sessions
+		and thus disables it to handle any legitimate clients.
+		Or logs off clients by injecting fake EAPOL Logoff messages.
       -t <bssid>
          Set target WPA AP
       -s <pps>
@@ -198,8 +198,8 @@ ATTACK MODE e: EAPOL Start and Logoff Packet Injection
          Use Logoff messages to kick clients
 
 ATTACK MODE s: Attacks for IEEE 802.11s mesh networks
-  Various attacks on link management and routing in mesh networks.
-  Flood neighbors and routes, create black holes and divert traffic!
+		Various attacks on link management and routing in mesh networks.
+		Flood neighbors and routes, create black holes and divert traffic!
       -f <type>
          Basic fuzzing tests. Picks up Action and Beacon frames from the air, modifies and replays them:
          The following modification types are implemented:
@@ -222,9 +222,9 @@ ATTACK MODE s: Attacks for IEEE 802.11s mesh networks
          Target this mesh network
 
 ATTACK MODE w: WIDS Confusion
-  Confuse/Abuse Intrusion Detection and Prevention Systems by
-  cross-connecting clients to multiple WDS nodes or fake rogue APs.
-  Confuses a WDS with multi-authenticated clients which messes up routing tables
+		Confuse/Abuse Intrusion Detection and Prevention Systems by
+		cross-connecting clients to multiple WDS nodes or fake rogue APs.
+		Confuses a WDS with multi-authenticated clients which messes up routing tables
       -e <SSID>
          SSID of target WDS network
       -c [chan,chan,...,chan[:speed]]
@@ -238,9 +238,9 @@ ATTACK MODE w: WIDS Confusion
          Set speed in packets per second (Default: 100)
 
 ATTACK MODE f: Packet Fuzzer
-  A simple packet fuzzer with multiple packet sources
-  and a nice set of modifiers. Be careful!
-  mdk4 randomly selects the given sources and one or multiple modifiers.
+		A simple packet fuzzer with multiple packet sources
+		and a nice set of modifiers. Be careful!
+		mdk4 randomly selects the given sources and one or multiple modifiers.
       -s <sources>
          Specify one or more of the following packet sources:
          a - Sniff packets from the air
