@@ -1,7 +1,7 @@
 MDK_ROOT = ..
 include $(MDK_ROOT)/common.mak
 
-CFLAGS		+= -g -O3 -Wall -Wextra
+CFLAGS		+= -g -O3 -Wall -Wextra 
 LINKFLAGS	= -lpthread -lpcap $(LDFLAGS)
 
 SBINDIR		= $(PREFIX)/sbin
