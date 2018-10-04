@@ -69,8 +69,8 @@ int real_brute = 0;                          // use Bruteforce mode?
 int init_intelligent = 0;                    // Is intelligent_auth_dos initialized?
 int init_intelligent_data = 0;               // Is its data list initialized?
 int we_got_data = 0;                         // Sniffer thread tells generator thread if there is any data
-struct ether_addr mac_base;                  // First three bytes of adress given for bruteforcing MAC filter
-struct ether_addr mac_lower;                 // Last three bytes of adress for Bruteforcing MAC filter
+struct ether_addr mac_base;                  // First three bytes of address given for bruteforcing MAC filter
+struct ether_addr mac_lower;                 // Last three bytes of address for Bruteforcing MAC filter
 int mac_b_init = 0;                          // Initializer for MAC bruteforcer
 static pthread_mutex_t has_packet_mutex;     // Used for condition below
 static pthread_cond_t has_packet;            // Pthread Condition "Packet ready"
@@ -107,10 +107,10 @@ char use_macb[]="f   - MAC filter bruteforce mode\n"
 		"      -t <bssid>\n"
 		"         Target BSSID\n"
 		"      -m <mac>\n"
-		"         Set the MAC adress range to use (3 bytes, i.e. 00:12:34)\n"
+		"         Set the MAC address range to use (3 bytes, i.e. 00:12:34)\n"
 		"         Without -m, the internal database will be used\n"
 		"      -f <mac>\n"
-		"         Set the MAC adress to begin bruteforcing with\n"
+		"         Set the MAC address to begin bruteforcing with\n"
 		"         (Note: You can't use -f and -m at the same time)\n";
 
 char use_wpad[]="g   - WPA Downgrade test\n"
@@ -218,7 +218,7 @@ struct pckt mac_bruteforcer()
 	    if (memcmp(target, pkt_sniff+4, 6)) // Filter out own packets & APs responding strangely (authing themselves)
 	    if ((pkt_sniff[28] == 0x00) && (pkt_sniff[29] == 0x00)) {
 		unsigned char *p = pkt_sniff;
-		printf("\n\nFound a valid MAC adress: %02X:%02X:%02X:%02X:%02X:%02X\nHave a nice day! :)\n",
+		printf("\n\nFound a valid MAC address: %02X:%02X:%02X:%02X:%02X:%02X\nHave a nice day! :)\n",
 		       p[4], p[5], p[6], p[7], p[8], p[9]);
 		exit(0);
 	    }

@@ -48,7 +48,7 @@ void create_ieee_hdr(struct packet *pkt, uint8_t type, char dsflags, uint16_t du
       memcpy((pkt->data) + (sizeof(struct ieee_hdr)), source.ether_addr_octet, ETHER_ADDR_LEN);
       break;
     default:
-      printf("ERROR: DS Flags invalid, use only a, f, t or w! Frame will have no MAC adresses!\n");
+      printf("ERROR: DS Flags invalid, use only a, f, t or w! Frame will have no MAC addresses!\n");
   }
 
   hdr->duration = htole16(duration);
