@@ -25,7 +25,7 @@ att:
 osd:
 	$(MAKE) -C $(OSD)
 
-$(LIBOSD):
+$(LIBOSD) $(OSD)/libosdep.a:
 	$(MAKE) -C $(OSD)
 
 $(OBJ_ATT):
