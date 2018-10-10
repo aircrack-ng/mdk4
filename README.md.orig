@@ -159,7 +159,7 @@ FULL OPTIONS:
 			 Set speed in packets per second (Default: unlimited)
 		      -x
 			 Enable full IDS stealth by matching all Sequence Numbers
-			 Packets will only be sent with clients' addresses
+			 Packets will only be sent with clients' adresses
 		      -c [chan,chan,...,chan[:speed]]
 			 Enable channel hopping. When -c h is given, mdk4 will hop an all
 			 14 b/g channels. Channel will be changed every 3 seconds,
@@ -210,10 +210,10 @@ FULL OPTIONS:
 			 4: Shotgun mode, randomly overwriting bytes after header (find bugs)
 			 5: Skript-kid's automated attack trying all of the above randomly :)
 		      -b <impersonated_meshpoint>
-			 Create a Blackhole, using the impersonated_meshpoint's MAC address
+			 Create a Blackhole, using the impersonated_meshpoint's MAC adress
 			 mdk4 will answer every incoming Route Request with a perfect route over the impersonated node.
 		      -p <impersonated_meshpoint>
-			 Path Request Flooding using the impersonated_meshpoint's address
+			 Path Request Flooding using the impersonated_meshpoint's adress
 			 Adjust the speed switch (-s) for maximum profit!
 		      -l
 			 Just create loops on every route found by modifying Path Replies

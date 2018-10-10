@@ -39,7 +39,7 @@ void deauth_longhelp()
 	  "         Set speed in packets per second (Default: unlimited)\n"
       "      -x\n"
       "         Enable full IDS stealth by matching all Sequence Numbers\n"
-      "         Packets will only be sent with clients' adresses\n"
+      "         Packets will only be sent with clients' addresses\n"
 	  "      -c [chan,chan,...,chan[:speed]]\n"
 	  "         Enable channel hopping. When -c h is given, mdk4 will hop an all\n"
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"

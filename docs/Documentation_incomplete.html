@@ -189,7 +189,7 @@ networks at once.<br>
 from file. See example file!<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This is used to fake
 only a very specific set of networks. Every line in this file consists
-of the APs adress and its name. See the example file fakeap-example.txt
+of the APs address and its name. See the example file fakeap-example.txt
 on how to use it.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -t &lt;adhoc&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -t 1 = Create only
@@ -217,12 +217,12 @@ both types will be used.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Use valid accesspoint
 MAC from built-in OUI database<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Usually, MDK3
-generates networks with a random adress. But as far as not all adresses
+generates networks with a random address. But as far as not all addresses
 are used by actual hardware, it would be easy to detect most of mdk3's
 network as Fakes.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This option refers to
-the adress database included
-in MDK3 to generate only AcessPoints with adresses from known hardware
+the address database included
+in MDK3 to generate only AcessPoints with addresses from known hardware
 vendors. With this option it is hard to say, if a network is fake or
 not.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -h<br>
@@ -267,7 +267,7 @@ by generating some fake clone networks:<br>
  style="font-style: italic;">b -n "Hack me" -b 54 -w a -m -c 11</span><br>
 <br>
 The b activates beacon flood mode, -n sets the name, -b 54 makes it 54
-MBit, -w a enables WPA2/AES only, -m makes MDK3 only use valid adresses
+MBit, -w a enables WPA2/AES only, -m makes MDK3 only use valid addresses
 so the attacker will have a hard time to filter and -c
 sets the correct channel.<br>
 Do not forget to set your card's channel
@@ -303,7 +303,7 @@ channel (you could use some other tool to hop channels to attack all
 APs in range.)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -m<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Use valid client MAC
-from built-in OUI database, so the AP can't filter invalid adresses.<br>
+from built-in OUI database, so the AP can't filter invalid addresses.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -i &lt;ap_mac&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Perform intelligent
 test on AP.<br>
@@ -321,7 +321,7 @@ attacks. So first, you try a simple attack to see how your AP handles
 too many connected clients. Usually at a certain limit (128 or 256
 clients), the AP denies additional clients. Cheap APs also tend to
 FREEZE and need to be resetted, so be careful with this! Let's assume
-your AP has 00:00:11:22:33:44 as hardware adress, this is the first
+your AP has 00:00:11:22:33:44 as hardware address, this is the first
 test:<br>
 <br>
 <span style="font-style: italic;">mdk3 </span>[your_interface]<span
@@ -329,7 +329,7 @@ test:<br>
 <br>
 <span style="font-style: italic;"></span></span>a activates the Auth
 DoS mode. -a selects your target AP, -m makes mdk3 use only valid
-adresses to make filtering difficult. After a few seconds mdk3 may show
+addresses to make filtering difficult. After a few seconds mdk3 may show
 one or mor of those messages:<br>
 <ul>
   <li><span style="font-weight: bold;">AP 00:00:11:22:33:44 is
@@ -570,20 +570,20 @@ mdk3 tells the client, it has been kicked because the AP is full.<br>
 mdk3 tells the AP, the client is leaving the network.</li>
 </ul>
 mdk3 listens on the current channel for Data packets, extracts the
-adresses of AP and Station from them, and sends one packet of each
+addresses of AP and Station from them, and sends one packet of each
 type. Every second, a status message is displayed, if something has
 happened.<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -w &lt;filename&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Read file containing
 MACs not to care about (Whitelist mode)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Put the MAC adresses
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Put the MAC addresses
 of stations and APs, who shall NOT be attacked in this file, mdk3 will
 skip them<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -b &lt;filename&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Read file containing
 MACs to run test on (Blacklist Mode)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Put MAC adresses of
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Put MAC addresses of
 stations and APs in this file, who SHALL BE attacked.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -s &lt;pps&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Set speed in packets
