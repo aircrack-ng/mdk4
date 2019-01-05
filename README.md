@@ -14,7 +14,7 @@ MDK4 is licenced under the GPLv2 or later.
 
 
 # Installation
-		apt-get install pkg-config libnl-3-dev libnl-genl-3-dev 
+		apt-get install pkg-config libnl-3-dev libnl-genl-3-dev libpcap-dev 
 
 		cd /mdk4-master
 		make
