@@ -16,7 +16,8 @@ MDK4 is licenced under the GPLv2 or later.
 # Installation
 		apt-get install pkg-config libnl-3-dev libnl-genl-3-dev 
 
-		cd /mdk4-master
+		git clone https://github.com/aircrack-ng/mdk4
+		cd mdk4
 		make
 		sudo make install
 
