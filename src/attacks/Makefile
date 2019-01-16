@@ -1,5 +1,5 @@
-CFLAGS		= -g -O3 -Wall -Wextra
-LINKFLAGS	= -lpthread
+CFLAGS		+= -g -O3 -Wall -Wextra
+LINKFLAGS	= -lpthread $(LDFLAGS)
 
 OBJS		= $(shell ls *.h | sed s/"\.h"/"\.o"/g)
 
