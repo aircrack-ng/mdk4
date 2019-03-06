@@ -33,10 +33,10 @@ $(OBJ_ATT):
 
 mdk4: mdk4.c $(OSD)/libosdep.a $(OBJS) $(OBJS_OSD) $(OBJ_ATT)
 	$(MAKE) -C $(ATTACKS)
-	$(CC) $(CFLAGS) $(^) -o $(@) $(LIBS) $(LINKFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(^) -o $(@) $(LIBS) $(LINKFLAGS)
 
 test: test.c $(OBJS)
-	$(CC) $(CFLAGS) $(^) -o $(@) $(LINKFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(^) -o $(@) $(LINKFLAGS)
 	mv $(@) ..
 
 install: mdk4
