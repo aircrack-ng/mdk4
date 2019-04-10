@@ -164,41 +164,6 @@ struct ether_addr get_target_bssid()
 	return mac_block;
 }
 
-unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char *greylist) {
-  struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
-
-  if (! greylist) return 1;	//Always accept when no black/whitelisting selected
-
-  // If any of the Adresses is Blacklisted, ACCEPT target
-  if (isblacklist == BLACKLIST_FROM_FILE) {
-    if (is_blacklisted(hdr->addr1)) return 1;
-    if (is_blacklisted(hdr->addr2)) return 1;
-    if (is_blacklisted(hdr->addr3)) return 1;
-  }
-  else if(isblacklist == BLACKLIST_FROM_ESSID ||
-  isblacklist == BLACKLIST_FROM_BSSID  ||
-  isblacklist == BLACKLIST_FROM_STATION)
-  {
-	if(MAC_MATCHES(mac_block, hdr->addr1)||
-	MAC_MATCHES(mac_block, hdr->addr2)||
-	MAC_MATCHES(mac_block, hdr->addr3))
-		return 1;
-
-  // IF any of the Adresses is Whitelisted, SKIP target
-  } else {
-    if (is_whitelisted(hdr->addr1)) return 0;
-    if (is_whitelisted(hdr->addr2)) return 0;
-    if (is_whitelisted(hdr->addr3)) return 0;
-    if ((hdr->flags & 0x03) == 0x03) { //WDS...
-      struct ether_addr *fourth = get_source(pkt);
-      if (is_whitelisted(*fourth)) return 0;
-    }
-    return 1;
-  }
-
-  return 0;
-}
-
 unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
   struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
 
@@ -297,64 +262,6 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
   }
   
   return 0;
-}
-
-unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, unsigned char isblacklist, char *greylist, int stealth) {
-  struct packet sniffed;
-  struct ieee_hdr *hdr;
-  unsigned char wds = 0;
-
-  while(1) {
-    sniffed = osdep_read_packet();
-    if (sniffed.len == 0) exit(-1);
-
-    hdr = (struct ieee_hdr *) sniffed.data;
-
-	if(isblacklist == BLACKLIST_FROM_ESSID){
-		if(hdr->type == IEEE80211_TYPE_BEACON){
-				if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
-				memcpy(mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
-			}
-		}
-	}
-
-    if ((hdr->type != IEEE80211_TYPE_DATA) &&
-	(hdr->type != IEEE80211_TYPE_QOSDATA) &&
-	(hdr->type != IEEE80211_TYPE_NULL) &&
-	(hdr->type != IEEE80211_TYPE_AUTH) &&
-	(hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
-	(hdr->type != IEEE80211_TYPE_ASSOCRES) &&
-	(hdr->type != IEEE80211_TYPE_REASSOCREQ))
-		continue;
-
-    if (stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
-
-    if (accept_target(&sniffed, isblacklist, greylist)) break;
-  }
-
-  switch (hdr->flags & 0x03) {
-    case 0x03: //WDS
-      wds = 1;
-      MAC_COPY(*client, hdr->addr1);
-      MAC_COPY(*ap, hdr->addr2);
-    break;
-    case 0x01: //ToDS
-      MAC_COPY(*client, hdr->addr2);
-      MAC_COPY(*ap, hdr->addr1);
-    break;
-    case 0x02: //FromDS
-      MAC_COPY(*client, hdr->addr1);
-      MAC_COPY(*ap, hdr->addr2);
-    break;
-    case 0x00: //NoDS (AdHoc)
-      MAC_COPY(*client, hdr->addr2);
-      MAC_COPY(*ap, hdr->addr3);
-    break;
-  }
-
-  set_seqno(NULL, get_seqno(&sniffed));  // Eff you, WIDS
-
-  return wds;
 }
 
 unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, struct deauth_options *dopt) {
