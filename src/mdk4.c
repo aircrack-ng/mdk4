@@ -18,7 +18,7 @@ void *global_cur_options;
 struct attacks *global_cur_attack;
 
 char *mdk4_help = "MDK 4.0 " VERSION " - \"" VERSION_COOL "\"\n"
-		  "by E7mer@360PegasusTeam, thanks to the aircrack-ng community\n"
+		  "by E7mer, thanks to the aircrack-ng community\n"
 		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
 		  "And with lots of help from the great aircrack-ng community:\n"
 		  "Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape,\n"
@@ -93,7 +93,7 @@ void main_loop(struct attacks *att, void *options) {
     if((time(NULL) - t_prev) >= 1) {
       t_prev = time(NULL);
       att->print_stats(options);
-      printf("\rPackets sent: %6d - Speed: %4d packets/sec", p_sent, p_sent_ps);
+      printf("\rPackets sent: %6d - Speed: %4d packets/sec\n", p_sent, p_sent_ps);
       fflush(stdout);
       p_sent_ps=0;
     }

@@ -17,7 +17,19 @@ enum blacklist_type{
 
 struct deauth_options {
   char *greylist;
+  char *blacklist;
+  char *whitelist;
+
+  unsigned char blacklist_from_file;
+  unsigned char blacklist_from_essid;
+  unsigned char blacklist_from_bssid;
+  unsigned char blacklist_from_station;
+
+  unsigned char whitelist_from_file;
+  unsigned char whitelist_from_station;
+
   enum blacklist_type isblacklist;
+
   unsigned int speed;
   int stealth;
 };

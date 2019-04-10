@@ -10,8 +10,20 @@ struct greylist {
   struct greylist *next;
 };
 
+typedef enum
+{
+  BLACK_LIST,
+  WHITE_LIST,
+
+}list_type;
+
 struct greylist *glist = NULL;
+struct blacklist *blist = NULL;
+struct whitelist *wlist = NULL;
+
 char black = 0;
+char white = 0;
+
 
 struct greylist *add_to_greylist(struct ether_addr new, struct greylist *glist) {
   struct greylist *gnew = malloc(sizeof(struct greylist));
@@ -45,39 +57,70 @@ struct greylist *search_in_greylist(struct ether_addr mac, struct greylist *glis
   return NULL;
 }
 
-void load_greylist(char isblacklist, char *filename) {
+void load_greylist(list_type type, char *filename) {
   char *entry;
 
   if (filename) {
+    
+    if(type == BLACK_LIST)
+    {
+      glist = blist;
+      black = 1;
+    }
+    else if(type == WHITE_LIST)
+    {
+      glist = wlist;
+      white = 1;
+    }
+
     entry = read_next_line(filename, 1);
-    while(entry) {
-      if (! search_in_greylist(parse_mac(entry), glist)) {	//Only add new entries
-	glist = add_to_greylist(parse_mac(entry), glist);
+    while(entry) 
+    {
+      if (!search_in_greylist(parse_mac(entry), glist)) //Only add new entries
+      {	
+	      glist = add_to_greylist(parse_mac(entry), glist);
       }
       free(entry);
       entry = read_next_line(filename, 0);
     }
   }
-
-  black = isblacklist;
 }
 
-char is_blacklisted(struct ether_addr mac) {
-  struct greylist *entry = search_in_greylist(mac, glist);
-
-  if (black) {
-    if (entry) return 1;
-    else return 0;
-  } else {
-    if (entry) return 0;
-    else return 1;
-  }
+void load_blacklist(char *filename)
+{
+  load_greylist(BLACK_LIST, filename);
 }
 
-char is_whitelisted(struct ether_addr mac) {
-  if (is_blacklisted(mac)) {
-    return 0;
-  } else {
-    return 1;
-  }
+void load_whitelist(char *filename)
+{
+  load_greylist(WHITE_LIST, filename);
+}
+
+char is_blacklisted(struct ether_addr mac) 
+{
+  struct greylist *entry; 
+
+  if (black) 
+  {
+     entry = search_in_greylist(mac, blist);
+    if (entry) 
+      return 1;
+  } 
+
+  return 0;
+}
+
+char is_whitelisted(struct ether_addr mac) 
+{
+  struct greylist *entry; 
+
+  if (white) 
+  {
+    entry = search_in_greylist(mac, wlist);
+
+    if (entry) 
+      return 1;
+  } 
+
+  return 0;
 }

