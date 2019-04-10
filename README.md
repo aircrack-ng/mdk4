@@ -171,6 +171,8 @@ FULL OPTIONS:
 			 Specify an AP BSSID to attack.
 		      -S <Station MAC address>
 			 Specify a station MAC address to attack.
+			  -W <Whitelist Station MAC address>
+			 Specify a whitelist station MAC.
 
 		ATTACK MODE m: Michael Countermeasures Exploitation
 		  Sends random packets or re-injects duplicates on another QoS queue
