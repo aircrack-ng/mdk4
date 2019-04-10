@@ -380,7 +380,7 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
   }
 
     if ((hdr->type != IEEE80211_TYPE_DATA) &&
-  /*(hdr->type != IEEE80211_TYPE_QOSDATA) &&*/
+  (hdr->type != IEEE80211_TYPE_QOSDATA) &&
   (hdr->type != IEEE80211_TYPE_NULL) &&
   (hdr->type != IEEE80211_TYPE_AUTH) &&
   (hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
