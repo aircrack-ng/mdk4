@@ -11,13 +11,13 @@
 #include "fragmenting.h"
 #include "channelhopper.h"
 
-#define VERSION "v1"
+#define VERSION "4.1"
 #define VERSION_COOL "Awesome!"
 
 void *global_cur_options;
 struct attacks *global_cur_attack;
 
-char *mdk4_help = "MDK 4.0 " VERSION " - \"" VERSION_COOL "\"\n"
+char *mdk4_help = "MDK4 " VERSION " - \"" VERSION_COOL "\"\n"
 		  "by E7mer, thanks to the aircrack-ng community\n"
 		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
 		  "And with lots of help from the great aircrack-ng community:\n"
