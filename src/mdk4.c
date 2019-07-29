@@ -17,6 +17,7 @@
 void *global_cur_options;
 struct attacks *global_cur_attack;
 
+
 char *mdk4_help = "MDK4 " VERSION " - \"" VERSION_COOL "\"\n"
 		  "by E7mer, thanks to the aircrack-ng community\n"
 		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
