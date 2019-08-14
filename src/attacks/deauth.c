@@ -178,9 +178,10 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   // If any of the Adresses is Blacklisted, ACCEPT target
   if (dopt->blacklist_from_file == 1) {
-    if (is_blacklisted(hdr->addr1)) return 1;
-    if (is_blacklisted(hdr->addr2)) return 1;
-    if (is_blacklisted(hdr->addr3)) return 1;
+    if (is_blacklisted(hdr->addr1) || is_blacklisted(hdr->addr2) || is_blacklisted(hdr->addr3))
+    {
+      return 1;
+    } 
   }
 
   if(dopt->blacklist_from_bssid == 1 && dopt->blacklist_from_station == 1)
@@ -259,6 +260,30 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
   {
       if(MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3))
         return 1;
+  }
+
+  if(dopt->whitelist_from_file == 1)
+  {
+    if (is_whitelisted(hdr->addr1) || is_whitelisted(hdr->addr2) || is_whitelisted(hdr->addr3))
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    } 
+  }
+
+  if(dopt->whitelist_from_station == 1)
+  {
+    if(MAC_MATCHES(white_mac, hdr->addr1) || MAC_MATCHES(white_mac, hdr->addr2) || MAC_MATCHES(white_mac, hdr->addr3))
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
   }
   
   return 0;
