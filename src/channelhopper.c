@@ -384,7 +384,6 @@ void channel_sniff()
 	struct ieee_hdr *hdr;
 	struct ether_addr bssid;
 	char ssid[32];
-	int ie_type;
 	int ie_len;
 	unsigned char *pie_data;
 	unsigned char channel;
@@ -589,7 +588,7 @@ void init_channel_hopper(char *chanlist, int useconds)
     // Channel list chans[MAX_CHAN_COUNT] has been initialized with declaration for all b/g channels
     char *token = NULL;
     int chan_cur = EOF;
-    int lpos = 0, i;
+    int lpos = 0;
 
     if (hopper) {
       printf("There is already a channel hopper running, skipping this one!\n");
