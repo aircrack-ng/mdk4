@@ -192,7 +192,7 @@ unsigned int get_ssid_len(struct ether_addr target) {
 struct packet create_probe_req(struct probing_options *popt)
 {
   struct packet probe;
-  unsigned char i,c,type, ssid_len;
+  unsigned char i,c,type;
   unsigned char ssid[256] = {0};
   struct ether_addr apmac = *(popt->target);
   struct ether_addr stamac = generate_mac(MAC_KIND_RANDOM);
