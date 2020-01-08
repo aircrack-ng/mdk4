@@ -149,7 +149,11 @@ struct ether_addr get_target_bssid()
 	while(1) {
 
 		sniffed = osdep_read_packet();
-		if (sniffed.len == 0) exit(-1);
+		//if (sniffed.len == 0) exit(-1);
+    if (sniffed.len == 0) {
+      sleep(1);
+      continue;
+    }
 
 		hdr = (struct ieee_hdr *) sniffed.data;
 		if (hdr->type == IEEE80211_TYPE_BEACON )
@@ -299,7 +303,11 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
 
   while(1) {
     sniffed = osdep_read_packet();
-    if (sniffed.len == 0) exit(-1);
+    //if (sniffed.len == 0) exit(-1);
+    if (sniffed.len == 0) {
+      sleep(1);
+      continue;
+    }
 
     hdr = (struct ieee_hdr *) sniffed.data;
 

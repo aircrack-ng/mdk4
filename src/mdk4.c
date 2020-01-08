@@ -76,7 +76,9 @@ void main_loop(struct attacks *att, void *options) {
   while (1) {
     //Get packet
     inject = att->get_packet(options);
-    if ((inject.data == NULL) || (inject.len == 0)) break;
+    if ((inject.data == NULL) || (inject.len == 0)) 
+      //break;
+      continue;
 
     //Send packet
     if (frag_is_enabled()) ret = frag_send_packet(&inject);
