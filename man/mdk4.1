@@ -5,13 +5,10 @@ mdk4 \- IEEE 802.11 PoC tool
 
 .SH SYNOPSIS
 .B mdk4
-[
-.IR interface
-] [
-.IR test_mode
-] [
-.IR test_options
-]
+<interface> <attack_mode> [attack_options]
+.br
+.B mdk4
+<interface in> <interface out> <attack_mode> [attack_options]
 
 .SH DESCRIPTION
 .I mdk4
@@ -19,273 +16,329 @@ is a proof-of-concept (PoC) tool to exploit common IEEE 802.11 protocol weakness
 
 .SH OPTIONS
 
-.B a
-- Authentication DoS
-.br
-Sends authentication frames to all APs found in range. Too many clients freeze or reset almost every AP.
-.RS
-.TP
-.BI -a " ap_mac"
-Only test an AP with the MAC address
-.IR ap_mac
-.TP
-.BI -m
-Use valid client MAC address from the OUI database
-.TP
-.BI -c
-Do not check for the test being successful.
-.TP
-.BI -i " ap_mac"
-Perform intelligent test on AP (-a and -c will be ignored): connect clients to an AP with the MAC address
-.IR ap_mac
-and reinjects sniffed data to keep them alive
-.TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: infinity)
-.RE
+Try 
+.B mdk4
+--help <attack_mode> for info about one attack only.
 
-.B b
-- Beacon Flood
+Try 
+.B mdk4
+--fullhelp for all attack options.
+
+.B ATTACK MODES
 .br
-Sends beacon frames to show fake APs at clients. This can sometimes crash network scanners and even drivers!
+.br
+.RS
+.B b
+- Beacon Flooding
+.br
+Sends beacon frames to show fake APs at clients.
+.br
+This can sometimes crash network scanners and even drivers!
 .RS
 .TP
-.BI -n " ssid"
-Use SSID
-.IR ssid
-instead of randomly generated ones
-.TP
-.BI -f " file"
-Read SSIDs from
-.IR file
-instead of randomly generating them
-.TP
-.BI -v " file"
-Read MACs and SSIDs from
-.IR file
-; cf. example file
-.TP
-.BI -d
-Show station as Ad-Hoc
-.TP
-.BI -w
-Set WEP bit (generate encrypted networks)
-.TP
-.BI -g
-Show stations as 802.11g (54 Mbit)
-.TP
-.BI -t
-Show stations using WPA TKIP encryption
+.BI -n " <ssid>"
+Use SSID <ssid> instead of randomly generated ones
 .TP
 .BI -a
-Show stations using WPA AES encryption
+Use also non-printable caracters in generated SSIDs and create SSIDs that break the 32-byte limit
+.TP
+.BI -f " <filename>"
+Read SSIDs from file
+.TP
+.BI -v " <filename>"
+Read MACs and SSIDs from file. See example file!
+.TP
+.BI -t " <adhoc>"
+-t 1 = Create only Ad-Hoc network
+.br
+-t 0 = Create only Managed (AP) networks
+.br
+without this option, both types are generated
+.TP
+.BI -w " <encryptions>"
+without this option, both types are generated
+.br
+Valid options: n = No Encryption, w = WEP, t = TKIP (WPA), a = AES (WPA2)
+.br
+You can select multiple types, i.e. "-w wta" will only create WEP and WPA networks
+.TP
+.BI -b " <bitrate>"
+Select if 11 Mbit (b) or 54 MBit (g) networks are created
+Without this option, both types will be used.
 .TP
 .BI -m
-Use valid accesspoint MACs from OUI database
-.TP
+Use valid accesspoint MAC from built-in OUI database
 .BI -h
-Hop to channel where AP is spoofed - this makes the test more effective against some devices/drivers, but it reduces packet rate due to channel hopping
+Hop to channel where network is spoofed
+.br
+This is more effective with some devices/drivers
+.br
+But it reduces packet rate due to channel hopping.
 .TP
-.BI -c " chan"
-Fake an AP on channel
-.IR chan
-If you want your card to hop on this channel, you have to set -h option, too!
+.BI -c " <chan>"
+Create fake networks on channel
+.BI <chan>
+, If you want your card to hop on this channel, you have to set 
+.BI "-h"
+option, too.
 .TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: 50)
+.BI -i " <HEX>"
+Add user-defined IE(s) in hexadecimal at the end of the tagged parameters
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: 50)
 .RE
 
-.B d
-- Deauthentication / Disassociation Amok Mode
+.B a
+- Authentication Denial-Of-Service
 .br
-Kicks everybody found from AP.
+Sends authentication frames to all APs found in range.
+.br
+Too many clients can freeze or reset several APs.
 .RS
 .TP
-.BI -w " file"
-Read MACs from
-.IR file
-that are to be unaffected (whitelist mode)
+.BI -a " <ap_mac>"
+Only test the specified AP
 .TP
-.BI -b " file"
-Read MACs from
-.IR file
-that are to be tested on (blacklist mode)
+.BI -m
+Use valid client MAC from built-in OUI database
 .TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: infinity)
-.TP
-.BI -c " [chan_1,chan_2,...chan_n]"
-Enable channel hopping. Without providing any channels, mdk4 will hop an all 14 b/g channels. The current channel will be changed every 5 seconds.
-.RE
-
-.B f
-- MAC Filter Bruteforce Mode
+.BI -i " <ap_mac>"
+Perform intelligent test on AP
 .br
-This test uses a list of known client MAC addresses and tries to authenticate them to the given AP while dynamically changing the response timeout for best performance. It currently works only on APs which deny an open authentication request properly.
-.RS
+This test connects clients to the AP and reinjects sniffed data to keep them alive.
 .TP
-.BI -t " bssid"
-Target
-.IR bssid
-.TP
-.BI -m " mac_prefix"
-Set the MAC address range
-.IR mac_prefix
-(3 bytes, e.g. 00:12:34); without -m, the internal database will be used
-.TP
-.BI -f " mac"
-Begin bruteforcing with MAC address
-.IR mac
-(Note: -f and -m cannot be used at the same time)
-.RE
-
-.B g
-- WPA Downgrade Test
-.br
-Deauthenticates Stations and APs sending WPA encrypted packets. With this test you can check if the sysadmin will try setting his network to WEP or disable encryption. mdk4 will let WEP and unencrypted clients work, so if the sysadmin simply thinks "WPA is broken" he sure isn't the right one for this job (this can/should be combined with social engineering).
-.RS
-.TP
-.BI -t " bssid"
-Target
-.IR bssid
-.RE
-
-.B m
-- Michael Shutdown Exploitation (TKIP)
-.br
-Cancels all traffic continuously.
-.RS
-.TP
-.BI -t " bssid"
-Target
-.IR bssid
-.TP
-.BI -w " time"
-Time
-.IR time
-(in seconds) between bursts (Default: 10)
-.TP
-.BI -n " ppb"
-Set packets per burst
-.IR ppb
-(Default: 70)
-.TP
-.BI -j
-Use the new TKIP QoS-Exploit - needs just a few packets to shut the AP down!
-.TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: infinity)
+.BI -s " <pps>"
+Set speed in packets per second (Default: unlimited)
 .RE
 
 .B p
-- Basic Probing and ESSID Bruteforce Mode
+- SSID Probing and Bruteforcing
 .br
-Probes AP and check for answer, useful for checking if the SSID has been correctly decloaked or if AP is in your adaptor's sending range. Use -f and -t option to enable SSID Bruteforcing.
+Probes APs and checks for answer, useful for checking if SSID has been correctly decloaked and if AP is in your sending range. Bruteforcing of hidden SSIDs with or without a wordlist is also available.
 .RS
 .TP
-.BI -e " ssid"
-Probe for
-.IR bssid
+.BI -e " <ssid>"
+SSID to probe for
 .TP
-.BI -f " file"
-Read lines from
-.IR file
-for bruteforcing hidden SSIDs
+.BI -f " <filename>"
+Read SSIDs from file for bruteforcing hidden SSIDs
 .TP
-.BI -t " bssid"
-Target AP
-.IR bssid
+.BI -t " <bssid>"
+Set MAC address of target AP
 .TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Normal Default: infinity; Bruteforce Default: 300)
+.BI -s " <pps>"
+Set speed (Default: 400)
 .TP
-.BI -b " character_set"
-Use full Bruteforce mode based on
-.IR character_set
-(recommended for short SSIDs only!) - use this switch only to show its help screen
+.BI -b " <character_sets>"
+Use full Bruteforce mode (recommended for short SSIDs only!)
+.br
+You can select multiple character sets at once:
+.br
+* n (Numbers:   0-9)
+.br
+* u (Uppercase: A-Z)
+.br
+* l (Lowercase: a-z)
+.br
+* s (Symbols: ASCII)
+.TP
+.BI -p " <word>"
+Continue bruteforcing, starting at 
+.BI "<word>"
+.TP
+.BI -r " <channel>"
+Probe request tests (mod-musket)
+.RE
+
+.B d
+- Deauthentication and Disassociation
+.br
+Sends deauthentication and disassociation packets to stations based on data traffic to disconnect all clients from an AP.
+.RS
+.TP
+.BI -w " <filename>"
+Read file containing MACs not to care about (Whitelist mode)
+.TP
+.BI -b " <filename>"
+Read file containing MACs to run test on (Blacklist Mode)
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: unlimited)
+.TP
+.BI -x
+Enable full IDS stealth by matching all Sequence Numbers Packets will only be sent with clients addresses
+.TP
+.BI -c " [chan,chan,...,chan[:speed]]"
+Enable channel hopping. When -c h is given, mdk4 will hop an all 14 b/g channels. Channel will be changed every 3 seconds, if speed is not specified. Speed value is in milliseconds!
+.TP
+.BI -E " <essid>"
+Specify an AP ESSID to attack.
+.TP
+.BI -B " <bssid>"
+Specify an AP BSSID to attack.
+.TP
+.BI -S " <mac>"
+Specify a station MAC address to attack.
+.TP
+.BI -W " <mac>"
+Specify a whitelist station MAC.
+.RE
+
+.B m
+- Michael Countermeasures Exploitation
+.br
+Sends random packets or re-injects duplicates on another QoS queue to provoke Michael Countermeasures on TKIP APs. AP will then shutdown for a whole minute, making this an effective DoS.
+.RS
+.TP
+.BI -t " <bssid>"
+Set target AP, that runs TKIP encryption
+.TP
+.BI -j
+Use the new QoS exploit which only needs to reinject a few packets instead of the random packet injection, which is unreliable but works without QoS.
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: 400)
+.TP
+.BI -w " <seconds>"
+Wait 
+.B <seconds>
+between each random packet burst (Default: 10)
+.TP
+.BI -n " <count>"
+Send 
+.B <count>
+random packets per burst (Default: 70)
+.RE
+
+.B e
+- EAPOL Start and Logoff Packet Injection
+.br
+Floods an AP with EAPOL Start frames to keep it busy with fake sessions and thus disables it to handle any legitimate clients.
+.br
+Or logs off clients by injecting fake EAPOL Logoff messages.
+.RS
+.TP
+.BI -t " <bssid>"
+Set target WPA AP
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: 400)
+.TP
+.BI -l
+Use Logoff messages to kick clients
+.RE
+
+.B s
+- Attacks for IEEE 802.11s mesh networks
+.br
+Various attacks on link management and routing in mesh networks.
+.br
+Flood neighbors and routes, create black holes and divert traffic!
+.RS
+.TP
+.BI -f " <type>"
+Basic fuzzing tests. Picks up Action and Beacon frames from the air, modifies and replays them:
+.br
+The following modification types are implemented:
+.br
+1: Replay identical frame until new one arrives (duplicate flooding)
+.br
+2: Change Source and BSSID (possibly resulting in Neighbor Flooding)
+.br
+3: Cut packet short, leave 802.11 header intact (find buffer errors)
+.br
+4: Shotgun mode, randomly overwriting bytes after header (find bugs)
+.br
+5: Skript-kid's automated attack trying all of the above randomly :)
+.TP
+.BI -b " <impersonated_meshpoint>"
+Create a Blackhole, using the impersonated_meshpoint's MAC address
+.br
+mdk4 will answer every incoming Route Request with a perfect route over the impersonated node.
+.TP
+.BI -p " <impersonated_meshpoint>"
+Path Request Flooding using the impersonated_meshpoint's address
+Adjust the speed switch (
+.B -s
+) for maximum profit!
+.TP
+.BI -l
+Just create loops on every route found by modifying Path Replies
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: 100)
+.TP
+.BI -n " <meshID>"
+Target this mesh network
 .RE
 
 .B w
-- WIDS/WIPS/WDS Confusion
+- WIDS Confusion
 .br
-Confuses a WDS with multi-authenticated clients, which messes up routing tables.
+Confuse/Abuse Intrusion Detection and Prevention Systems by cross-connecting clients to multiple WDS nodes or fake rogue APs.
+.br
+Confuses a WDS with multi-authenticated clients which messes up routing tables
 .RS
 .TP
-.BI -e " ssid"
-SSID
-.IR ssid
-of target WDS network
+.BI -e " <SSID>"
+SSID of target WDS network
 .TP
-.BI -c " [chan_1,chan_2,...chan_n]"
-Enable channel hopping.
+.BI -c " [chan,chan,...,chan[:speed]]"
+Enable channel hopping. When 
+.B -c
+h is given, mdk4 will hop on all 14 b/g channels. Channel will be changed every 3 seconds, if speed is not specified. Speed value is in milliseconds!
 .TP
 .BI -z
 activate Zero_Chaos' WIDS exploit (authenticates clients from a WDS to foreign APs to make WIDS go nuts)
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: 100)
 .RE
 
-.B x
-- 802.1X tests
-.RS
-0 - EAPOL Start packet flooding
-.RS
-.TP
-.BI -n " ssid"
-Use SSID
-.IR ssid
-.TP
-.BI -t " bssid"
-Target AP
-.IR bssid
-.TP
-.BI -w " WPA_type"
-Set WPA type to
-.IR WPA_type
-(1: WPA, 2: WPA2/RSN; default: WPA)
-.TP
-.BI -u " unicast_cipher_type"
-Set unicast cipher type to
-.IR unicast_cipher_type
-(1: TKIP, 2: CCMP; default: TKIP)
-.TP
-.BI -m " multicast_cipher_type"
-Set multicast cipher type to
-.IR multicast_cipher_type
-(1: TKIP, 2: CCMP; default: TKIP)
-.TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: 400)
-
-.RE
-1 - EAPOL Logoff test
+.B f
+- Packet Fuzzer
+.br
+A simple packet fuzzer with multiple packet sources and a nice set of modifiers. Be careful! mdk4 randomly selects the given sources and one or multiple modifiers.
 .RS
 .TP
-.BI -t " ssid"
-Set target AP MAC address to
-.IR ssid
+.BI -s " <sources>"
+Specify one or more of the following packet sources:
+.br
+a - Sniff packets from the air
+.br
+b - Create valid beacon frames with random SSIDs and properties
+.br
+c - Create CTS frames to broadcast (you can also use this for a CTS DoS)
+.br
+p - Create broadcast probe requests
 .TP
-.BI -c " bssid"
-Set target STA MAC address to
-.IR bssid
+.BI -m " <modifiers>"
+Select at least one of the modifiers here:
+.br
+n - No modifier, do not modify packets
+.br
+b - Set destination address to broadcast
+.br
+m - Set source address to broadcast
+.br
+s - Shotgun: randomly overwrites a couple of bytes
+.br
+t - append random bytes (creates broken tagged parameters in beacons/probes)
+.br
+c - Cut packets short, preferably somewhere in headers or tags
+.br
+d - Insert random values in Duration and Flags fields
 .TP
-.BI -s " rate"
-Set speed in packets per second to
-.IR rate
-(Default: 400)
+.BI -c " [chan,chan,...,chan[:speed]]"
+Enable channel hopping. When -c h is given, mdk4 will hop an all 14 b/g channels. Channel will be changed every 3 seconds, if speed is not specified. Speed value is in milliseconds!
+.TP
+.BI -p " <pps>"
+Set speed in packets per second (Default: 250)
 .RE
 .RE
 
 .SH AUTHORS
 .I mdk4
 was written by E7mer, Pedro Larbig (ASPj) with contributions from the aircrack-ng community: Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape, telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik and Ruslan Nabioullin.
+
