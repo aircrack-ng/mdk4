@@ -20,6 +20,7 @@ MDK4 is licenced under the GPLv2 or later.
 		cd mdk4
 		make
 		sudo make install
+		# Using Arch Linux (and derived) append: CC=clang
 
 
 # Features
