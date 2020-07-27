@@ -1,7 +1,9 @@
 MDK_ROOT = ..
 include $(MDK_ROOT)/common.mak
 
-CFLAGS		+= -g -O3 -Wall -Wextra 
+# TODO: Remove '-fcommon' from CFLAGS and address issues, reference:
+# https://gcc.gnu.org/gcc-10/porting_to.html#common
+CFLAGS		+= -g -O3 -Wall -Wextra -fcommon
 LINKFLAGS	= -lpthread -lpcap $(LDFLAGS)
 
 SBINDIR		= $(PREFIX)/sbin
