@@ -47,7 +47,7 @@ struct ia_stats
 pthread_t *sniffer = NULL;
 struct clistauthdos *aps = NULL, *increment_here = NULL, *cl = NULL;
 unsigned int apcount = 0;
-struct ether_addr client, bssid;
+static struct ether_addr client, bssid;
 struct clist *dataclist = NULL;
 
 

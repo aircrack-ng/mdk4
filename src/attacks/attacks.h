@@ -1,15 +1,15 @@
 #ifndef HAVE_ATTACKS_H
 #define HAVE_ATTACKS_H
 
-#include "beacon_flood.h"
-#include "auth_dos.h"
-#include "probing.h"
-#include "deauth.h"
-#include "countermeasures.h"
-#include "eapol.h"
-#include "ieee80211s.h"
-#include "wids.h"
-#include "fuzzer.h"
+//#include "beacon_flood.h"
+//#include "auth_dos.h"
+//#include "probing.h"
+//#include "deauth.h"
+//#include "countermeasures.h"
+//#include "eapol.h"
+//#include "ieee80211s.h"
+//#include "wids.h"
+//#include "fuzzer.h"
 
 #include "../packet.h"
 
@@ -36,6 +36,6 @@ struct attacks {
 
 struct attacks *load_attacks(int *count);
 
-int attack_count;
+//int attack_count;
 
 #endif

@@ -2,6 +2,16 @@
 #include <string.h>
 
 #include "attacks.h"
+#include "beacon_flood.h"
+#include "auth_dos.h"
+#include "probing.h"
+#include "deauth.h"
+#include "countermeasures.h"
+#include "eapol.h"
+#include "ieee80211s.h"
+#include "wids.h"
+#include "fuzzer.h"
+
 
 int attack_count = 9;
 

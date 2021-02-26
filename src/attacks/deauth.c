@@ -16,7 +16,7 @@
 
 
 //Global things, shared by packet creation and stats printing
-struct ether_addr bssid, station;
+static struct ether_addr bssid, station;
 struct ether_addr mac_block;                 // MAC for d mode, -S
 struct ether_addr bssid_block;               // MAC for d mode, -B
 struct ether_addr essid_mac_block;           // MAC for d mode, -E

@@ -31,7 +31,7 @@ struct beacon_flood_options {
 
 //Global things, shared by packet creation and stats printing
 char *ssid = NULL;
-struct ether_addr bssid;
+static struct ether_addr bssid;
 int curchan = 0;
 
 void beacon_flood_shorthelp()
