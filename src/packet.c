@@ -160,7 +160,7 @@ void add_channel_set(struct packet *pkt, uint8_t channel) {
 }
 
 struct packet create_beacon(struct ether_addr bssid, char *ssid, uint8_t channel, char encryption, unsigned char bitrate, char adhoc) {
-  struct packet beacon;
+  struct packet beacon = {0};
   struct beacon_fixed *bf;
   static uint64_t internal_timestamp = 0;
   struct ether_addr bc;
@@ -196,7 +196,7 @@ struct packet create_beacon(struct ether_addr bssid, char *ssid, uint8_t channel
 }
 
 struct packet create_auth(struct ether_addr bssid, struct ether_addr client, uint16_t seq) {
-  struct packet auth;
+  struct packet auth = {0};
   struct auth_fixed *af;
 
   create_ieee_hdr(&auth, IEEE80211_TYPE_AUTH, 'a', AUTH_DEFAULT_DURATION, bssid, client, bssid, SE_NULLMAC, 0);
@@ -212,7 +212,7 @@ struct packet create_auth(struct ether_addr bssid, struct ether_addr client, uin
 }
 
 struct packet create_probe(struct ether_addr source, char *ssid, unsigned char bitrate) {
-  struct packet probe;
+  struct packet probe = {0};
   struct ether_addr bc;
 
   MAC_SET_BCAST(bc);
@@ -225,7 +225,7 @@ struct packet create_probe(struct ether_addr source, char *ssid, unsigned char b
 }
 
 struct packet create_deauth(struct ether_addr destination, struct ether_addr source, struct ether_addr bssid) {
-  struct packet deauth;
+  struct packet deauth = {0};
   uint16_t *reason;
 
   create_ieee_hdr(&deauth, IEEE80211_TYPE_DEAUTH, 'a', AUTH_DEFAULT_DURATION, destination, source, bssid, SE_NULLMAC, 0);
@@ -243,7 +243,7 @@ struct packet create_deauth(struct ether_addr destination, struct ether_addr sou
 }
 
 struct packet create_disassoc(struct ether_addr destination, struct ether_addr source, struct ether_addr bssid) {
-  struct packet disassoc;
+  struct packet disassoc = {0};
   uint16_t *reason;
 
   create_ieee_hdr(&disassoc, IEEE80211_TYPE_DISASSOC, 'a', AUTH_DEFAULT_DURATION, destination, source, bssid, SE_NULLMAC, 0);
@@ -261,7 +261,7 @@ struct packet create_disassoc(struct ether_addr destination, struct ether_addr s
 }
 
 struct packet create_assoc_req(struct ether_addr client, struct ether_addr bssid, uint16_t capabilities, char *ssid, unsigned char bitrate) {
-  struct packet assoc;
+  struct packet assoc = {0};
   struct assoc_fixed *af;
 
   create_ieee_hdr(&assoc, IEEE80211_TYPE_ASSOCREQ, 'a', AUTH_DEFAULT_DURATION, bssid, client, bssid, SE_NULLMAC, 0);
@@ -278,7 +278,7 @@ struct packet create_assoc_req(struct ether_addr client, struct ether_addr bssid
 }
 
 struct packet create_cts(struct ether_addr destination, uint16_t duration) {
-  struct packet pkt;
+  struct packet pkt = {0};
   struct cts *cts;
 
   cts = (struct cts *) pkt.data;
