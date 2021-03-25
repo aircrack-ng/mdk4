@@ -234,8 +234,10 @@ struct packet create_deauth(struct ether_addr destination, struct ether_addr sou
 
   if (MAC_MATCHES(source, bssid)) {
     *reason = htole16(DEAUTH_REASON_UNSPEC);	//AP to Station deauth is with unspecified reason
+    //*reason = htole16(0x0002);
   } else {
     *reason = htole16(DEAUTH_REASON_LEAVING);	//Station to AP deauth is with reason "I am leavin the network"
+    //*reason = htole16(0x0002);
   }
 
   deauth.len += 2;
@@ -252,8 +254,10 @@ struct packet create_disassoc(struct ether_addr destination, struct ether_addr s
 
   if (MAC_MATCHES(source, bssid)) {
     *reason = htole16(DISASSOC_REASON_APFULL);	//AP to Station: I kick you because I am crowded!
+    //*reason = htole16(0x0002);
   } else {
     *reason = htole16(DISASSOC_REASON_LEAVING);	//Station to AP: Bye bye, I am leaving the network!
+    //*reason = htole16(0x0002);
   }
 
   disassoc.len += 2;

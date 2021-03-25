@@ -319,14 +319,20 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
     }
   }
 
-    if ((hdr->type != IEEE80211_TYPE_DATA) &&
+    /*if ((hdr->type != IEEE80211_TYPE_DATA) &&
   (hdr->type != IEEE80211_TYPE_QOSDATA) &&
   (hdr->type != IEEE80211_TYPE_NULL) &&
   (hdr->type != IEEE80211_TYPE_AUTH) &&
   (hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
   (hdr->type != IEEE80211_TYPE_ASSOCRES) &&
-  (hdr->type != IEEE80211_TYPE_REASSOCREQ))
-    continue;
+  (hdr->type != IEEE80211_TYPE_REASSOCREQ)&&
+  (hdr->type != IEEE80211_TYPE_ACTION))
+    continue;*/
+    if((hdr->type & 0x0F) != 0x00 && (hdr->type & 0x0F) != 0x08)
+      continue;
+
+    if(hdr->type == IEEE80211_TYPE_BEACON || hdr->type == IEEE80211_TYPE_PROBEREQ || hdr->type == IEEE80211_TYPE_PROBERES)
+      continue;
 
     if (dopt->stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
 
@@ -341,14 +347,14 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
     break;
     case 0x01: //ToDS
       MAC_COPY(*client, hdr->addr2);
-      MAC_COPY(*ap, hdr->addr1);
+      MAC_COPY(*ap, hdr->addr3);
     break;
     case 0x02: //FromDS
-      if(hdr->type == IEEE80211_TYPE_DATA)
-        MAC_COPY(*client, hdr->addr3);
-      else
+      //if(hdr->type == IEEE80211_TYPE_DATA)
+      //  MAC_COPY(*client, hdr->addr3);
+      //else
         MAC_COPY(*client, hdr->addr1);
-      MAC_COPY(*ap, hdr->addr2);
+      MAC_COPY(*ap, hdr->addr3);
     break;
     case 0x00: //NoDS (AdHoc)
       MAC_COPY(*client, hdr->addr2);
