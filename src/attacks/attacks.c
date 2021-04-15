@@ -11,9 +11,10 @@
 #include "ieee80211s.h"
 #include "wids.h"
 #include "fuzzer.h"
+#include "poc.h"
 
 
-int attack_count = 9;
+int attack_count = 10;
 
 struct attacks *load_attacks(int *count) {
   struct attacks *attacks = malloc(sizeof(struct attacks) * attack_count);
@@ -27,6 +28,7 @@ struct attacks *load_attacks(int *count) {
   attacks[6] = load_ieee80211s();
   attacks[7] = load_wids();
   attacks[8] = load_fuzz();
+  attacks[9] = load_poc();
 
   *count = attack_count;
   return attacks;

@@ -11,7 +11,7 @@
 #include "fragmenting.h"
 #include "channelhopper.h"
 
-#define VERSION "4.1"
+#define VERSION "4.2"
 #define VERSION_COOL "Awesome!"
 
 void *global_cur_options;
@@ -26,11 +26,11 @@ char *mdk4_help = "MDK4 " VERSION " - \"" VERSION_COOL "\"\n"
 		  "telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik,\n"
 		  "Ruslan Nabioullin and Alex Oberle\n"
 		  "THANK YOU!\n\n"
-		  "MDK is a proof-of-concept tool to exploit common IEEE 802.11 protocol weaknesses.\n"
+		  "MDK4 is a proof-of-concept tool to exploit common IEEE 802.11 protocol weaknesses.\n"
 		  "IMPORTANT: It is your responsibility to make sure you have permission from the\n"
-		  "network owner before running MDK against it.\n\n"
+		  "network owner before running MDK4 against it.\n\n"
 		  "This code is licenced under the GPLv2 or later\n\n"
-		  "MDK USAGE:\n"
+		  "MDK4 USAGE:\n"
 		  "mdk4 <interface> <attack_mode> [attack_options]\n"
 		  "mdk4 <interface in> <interface out> <attack_mode> [attack_options]\n\n"
 		  "Try mdk4 --fullhelp for all attack options\n"

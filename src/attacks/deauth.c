@@ -81,23 +81,23 @@ void *deauth_parse(int argc, char *argv[]) {
 
   while ((opt = getopt(argc, argv, "w:b:s:xc:E:B:S:W:")) != -1) {
     switch (opt) {
-      case 'w':
+    case 'w':
       dopt->whitelist = malloc(strlen(optarg) + 1); 
       strcpy(dopt->whitelist, optarg);
       dopt->whitelist_from_file = 1;
       break;
-      case 'b':
+    case 'b':
       dopt->blacklist = malloc(strlen(optarg) + 1); 
       strcpy(dopt->blacklist, optarg);
       dopt->blacklist_from_file = 1;
       break;
-      case 's':
+    case 's':
 	    dopt->speed = (unsigned int) atoi(optarg);
       break;
-      case 'x':
+    case 'x':
       dopt->stealth = 1;
       break;
-      case 'c':
+    case 'c':
       speed = 3000000;
       speedstr = strrchr(optarg, ':');
       if (speedstr != NULL) {
@@ -353,7 +353,7 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
       //if(hdr->type == IEEE80211_TYPE_DATA)
       //  MAC_COPY(*client, hdr->addr3);
       //else
-        MAC_COPY(*client, hdr->addr1);
+      MAC_COPY(*client, hdr->addr1);
       MAC_COPY(*ap, hdr->addr3);
     break;
     case 0x00: //NoDS (AdHoc)

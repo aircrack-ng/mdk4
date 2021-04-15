@@ -154,9 +154,10 @@ struct wif *wi_open(char *iface)
 {
 	struct wif *wi;
 
-	wi = file_open(iface);
-	if (wi == (struct wif*) -1)
-		return NULL;
+        wi = file_open(iface);
+        if (wi == (struct wif*) -1)
+        return NULL;
+
 	if (!wi)
 		wi = net_open(iface);
 	if (!wi)

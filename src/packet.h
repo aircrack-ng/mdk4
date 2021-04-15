@@ -202,6 +202,7 @@ void add_eapol(struct packet *pkt, uint16_t wpa_length, uint8_t *wpa_element, ui
 void increase_seqno(struct packet *pkt);
 uint16_t get_seqno(struct packet *pkt);
 //If pkt is NULL in set_seqno, the sequence number for the next call to create_ieee_hdr will be seqno + 1!
+uint16_t get_next_seqno();
 void set_seqno(struct packet *pkt, uint16_t seqno);
 
 uint8_t get_fragno(struct packet *pkt);

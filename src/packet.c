@@ -410,6 +410,12 @@ uint8_t get_fragno(struct packet *pkt) {
   return (seq & 0xF);
 }
 
+uint16_t get_next_seqno()
+{
+  //return htole16(0 | ((++seqno) << 4));
+  return ++seqno;
+}
+
 void set_seqno(struct packet *pkt, uint16_t seq) {
   struct ieee_hdr *hdr;
   uint16_t frgseq;

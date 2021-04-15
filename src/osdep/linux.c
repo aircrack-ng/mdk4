@@ -1122,11 +1122,11 @@ static int linux_set_channel(struct wif *wi, int channel)
 
     if( ioctl( dev->fd_in, SIOCSIWFREQ, &wrq ) < 0 )
     {
-        usleep( 10000 ); /* madwifi needs a second chance */
+        usleep( 10000 ); // madwifi needs a second chance 
 
         if( ioctl( dev->fd_in, SIOCSIWFREQ, &wrq ) < 0 )
         {
-/*          perror( "ioctl(SIOCSIWFREQ) failed" ); */
+//          perror( "ioctl(SIOCSIWFREQ) failed" ); 
             return( 1 );
         }
     }
@@ -2187,12 +2187,12 @@ static struct wif *linux_open(char *iface)
 		return NULL;
         wi->wi_read             = linux_read;
         wi->wi_write            = linux_write;
-#ifdef CONFIG_LIBNL
-        linux_nl80211_init(&state);
-        wi->wi_set_channel      = linux_set_channel_nl80211;
-#else
+//#ifdef CONFIG_LIBNL
+//        linux_nl80211_init(&state);
+//        wi->wi_set_channel      = linux_set_channel_nl80211;
+//#else
         wi->wi_set_channel      = linux_set_channel;
-#endif
+//#endif
         wi->wi_get_channel      = linux_get_channel;
         wi->wi_set_freq		= linux_set_freq;
         wi->wi_get_freq		= linux_get_freq;
@@ -2221,7 +2221,7 @@ static struct wif *linux_open(char *iface)
 
 struct wif *wi_open_osdep(char *iface)
 {
-        return linux_open(iface);
+    return linux_open(iface);
 }
 
 int get_battery_state(void)
