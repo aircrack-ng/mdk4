@@ -12,20 +12,14 @@
 #include "channelhopper.h"
 
 #define VERSION "4.2"
-#define VERSION_COOL "Awesome!"
+#define VERSION_COOL "Awesome! Supports Proof-of-concept of WiFi protocol implementation vulnerability testing"
 
 void *global_cur_options;
 struct attacks *global_cur_attack;
 
 
 char *mdk4_help = "MDK4 " VERSION " - \"" VERSION_COOL "\"\n"
-		  "by E7mer, thanks to the aircrack-ng community\n"
-		  "MDK3, by ASPj of k2wrlz, using the osdep library from aircrack-ng\n"
-		  "And with lots of help from the great aircrack-ng community:\n"
-		  "Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape,\n"
-		  "telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik,\n"
-		  "Ruslan Nabioullin and Alex Oberle\n"
-		  "THANK YOU!\n\n"
+		  "by E7mer, thanks to the aircrack-ng community.\n"
 		  "MDK4 is a proof-of-concept tool to exploit common IEEE 802.11 protocol weaknesses.\n"
 		  "IMPORTANT: It is your responsibility to make sure you have permission from the\n"
 		  "network owner before running MDK4 against it.\n\n"

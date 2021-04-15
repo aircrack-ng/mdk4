@@ -7,7 +7,7 @@ MDK is a proof-of-concept tool to exploit common IEEE 802.11 protocol weaknesses
 
 MDK4 is a new version of MDK3.
 
-MDK4 is a Wi-Fi testing tool from E7mer of 360, ASPj of k2wrlz, it uses the osdep library from the aircrack-ng project to inject frames on several operating systems.
+MDK4 is a Wi-Fi testing tool from E7mer, ASPj of k2wrlz, it uses the osdep library from the aircrack-ng project to inject frames on several operating systems.
 Many parts of it have been contributed by the great aircrack-ng community: Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape, telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik and Ruslan Nabioullin. THANK YOU!
 
 MDK4 is licenced under the GPLv2 or later.
@@ -280,15 +280,15 @@ FULL OPTIONS:
 		  to test whether the device has wifi vulnerabilities.
 		  It may cause the wifi connection to be disconnected or the target device to crash.
 		  	  -s <pps>
-				Set speed in packets per second (Default: unlimited)
+			   Set speed in packets per second (Default: unlimited)
 			  -c [chan,chan,...,chan[:speed]]
 			  	Enable channel hopping. When -c h is given, mdk4 will hop an all
 				14 b/g channels. Channel will be changed every 3 seconds,
 				if speed is not specified. Speed value is in milliseconds!
 			  -v <vendor>
-			  	file name in pocs dir, default test all.
+			    file name in pocs dir, default test all.
 			  -A <AP MAC>
-			  	set an AP MAC
+			    set an AP MAC
 			  -S <Station MAC>
 			    set a station MAC.
 
