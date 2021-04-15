@@ -12,7 +12,7 @@
 #include "../helpers.h"
 
 
-#define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability test"
+#define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability testing"
 
 struct poc_packet *poc_pkts = NULL;
 int vendor_cnt = 0;

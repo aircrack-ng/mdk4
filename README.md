@@ -30,7 +30,7 @@ MDK4 is licenced under the GPLv2 or later.
 - Supports both 2.4 to 5GHz (Linux).
 - supports IDS Evasion (Ghosting, Fragmenting, Does not fully work with every driver).
 - supports packet fuzz testing.
-- supports Proof-of-concept of WiFi protocol implementation vulnerability test
+- supports Proof-of-concept of WiFi protocol implementation vulnerability testing
 
 
 # ATTACK MODE
@@ -65,7 +65,7 @@ MDK4 is licenced under the GPLv2 or later.
 		ATTACK MODE f: Packet Fuzzer
 		  A simple packet fuzzer with multiple packet sources
 		  and a nice set of modifiers. Be careful!
-		ATTACK MODE x: Poc Test
+		ATTACK MODE x: Poc Testing
 		  Proof-of-concept of WiFi protocol implementation vulnerability,
 		  to test whether the device has wifi vulnerabilities.
 		  It may cause the wifi connection to be disconnected or the target device to crash.
@@ -275,7 +275,7 @@ FULL OPTIONS:
 		      -p <pps>
 			 Set speed in packets per second (Default: 250)
 		
-		ATTACK MODE x: Poc Test
+		ATTACK MODE x: Poc Testing
 		  Proof-of-concept of WiFi protocol implementation vulnerability,
 		  to test whether the device has wifi vulnerabilities.
 		  It may cause the wifi connection to be disconnected or the target device to crash.
