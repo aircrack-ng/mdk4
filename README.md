@@ -30,6 +30,7 @@ MDK4 is licenced under the GPLv2 or later.
 - Supports both 2.4 to 5GHz (Linux).
 - supports IDS Evasion (Ghosting, Fragmenting, Does not fully work with every driver).
 - supports packet fuzz testing.
+- supports Proof-of-concept of WiFi protocol implementation vulnerability test
 
 
 # ATTACK MODE
@@ -64,6 +65,10 @@ MDK4 is licenced under the GPLv2 or later.
 		ATTACK MODE f: Packet Fuzzer
 		  A simple packet fuzzer with multiple packet sources
 		  and a nice set of modifiers. Be careful!
+		ATTACK MODE x: Poc Test
+		  Proof-of-concept of WiFi protocol implementation vulnerability,
+		  to test whether the device has wifi vulnerabilities.
+		  It may cause the wifi connection to be disconnected or the target device to crash.
 
 # Usage
 
@@ -106,7 +111,9 @@ FULL OPTIONS:
 			 This is more effective with some devices/drivers
 			 But it reduces packet rate due to channel hopping.
 		      -c <chan>
-			 Create fake networks on channel <chan>. If you want your card to
+			 Create fake networks on channel <c		ATTACK MODE f: Packet Fuzzer
+		  A simple packet fuzzer with multiple packet sources
+		  and a nice set of modifiers. Be careful!han>. If you want your card to
 			 hop on this channel, you have to set -h option, too.
 		      -i <HEX>
 			 Add user-defined IE(s) in hexadecimal at the end of the tagged parameters
@@ -267,6 +274,23 @@ FULL OPTIONS:
 			 if speed is not specified. Speed value is in milliseconds!
 		      -p <pps>
 			 Set speed in packets per second (Default: 250)
+		
+		ATTACK MODE x: Poc Test
+		  Proof-of-concept of WiFi protocol implementation vulnerability,
+		  to test whether the device has wifi vulnerabilities.
+		  It may cause the wifi connection to be disconnected or the target device to crash.
+		  	  -s <pps>
+				Set speed in packets per second (Default: unlimited)
+			  -c [chan,chan,...,chan[:speed]]
+			  	Enable channel hopping. When -c h is given, mdk4 will hop an all
+				14 b/g channels. Channel will be changed every 3 seconds,
+				if speed is not specified. Speed value is in milliseconds!
+			  -v <vendor>
+			  	file name in pocs dir, default test all.
+			  -A <AP MAC>
+			  	set an AP MAC
+			  -S <Station MAC>
+			    set a station MAC.
 
 
 

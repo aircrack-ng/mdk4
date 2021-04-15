@@ -12,7 +12,7 @@
 #include "../helpers.h"
 
 
-#define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability"
+#define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability test"
 
 struct poc_packet *poc_pkts = NULL;
 int vendor_cnt = 0;
@@ -20,14 +20,14 @@ int vendor_cnt = 0;
 void poc_shorthelp()
 {
   printf("  Proof-of-concept of WiFi protocol implementation vulnerability,\n");
-  printf("  to test where the device has wifi vulnerabilities.\n");
+  printf("  to test whether the device has wifi vulnerabilities.\n");
   printf("  It may cause the wifi connection to be disconnected or the target device to crash.\n");
 }
 
 void poc_longhelp()
 {
   printf( "  Proof-of-concept of 802.11 protocol implementation vulnerability,\n"
-	  "  to test where the device has wifi vulnerabilities.\n"
+	  "  to test whether the device has wifi vulnerabilities.\n"
       "  It may cause the wifi connection to be disconnected or the target device to crash.\n"
 	  "      -s <pps>\n"
 	  "         Set speed in packets per second (Default: unlimited)\n"
@@ -36,7 +36,7 @@ void poc_longhelp()
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"
 	  "         if speed is not specified. Speed value is in milliseconds!\n"
       "      -v <vendor>\n"
-      "         file name in pocs, default test all.\n"
+      "         file name in pocs dir, default test all.\n"
 	  "      -A <AP MAC>\n"
 	  "         set an AP MAC\n"
 	  "      -S <Station MAC>\n"
