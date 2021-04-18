@@ -46,6 +46,15 @@ void poc_longhelp()
 void* poc_parse(int argc, char *argv[]) {
   int opt, speed;
   char *speedstr;
+  DIR *dir;
+  struct dirent *ptr;
+  int file_cnt;
+  int file_lines;
+  char file_name[255];
+  unsigned char buf[8192];
+  FILE *fp1;
+  int i, j;
+    
   struct poc_options *popt = malloc(sizeof(struct poc_options));
   memset(popt, 0, sizeof(struct poc_options));
 
@@ -81,6 +90,94 @@ void* poc_parse(int argc, char *argv[]) {
         return NULL;
     }
   }
+     // load PoC packets
+    if ((dir=opendir("./pocs")) == NULL)
+    {
+	if(dir=opendir("/usr/local/src/mdk4/pocs")==NULL){
+            printf("Open pocs dir error!\n");
+            exit(1);
+	}
+    }
+
+    file_cnt = 0;
+    while((ptr=readdir(dir)) != NULL)
+    {
+        if(strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
+            continue;
+        
+        if(ptr->d_type == 8) // file
+        {
+            file_cnt++;
+        }
+        
+    }
+    closedir(dir);
+
+    if(file_cnt)
+    {
+        vendor_cnt = file_cnt;
+        poc_pkts = (struct poc_packet*)malloc(sizeof(struct poc_packet) * file_cnt);
+        if(poc_pkts == NULL)
+        {
+            printf("malloc error!\n");
+            exit(-1);
+        }
+
+        memset(poc_pkts, 0, sizeof(struct poc_packet) * file_cnt);
+
+        i=0;
+        dir=opendir("./pocs");
+        while((ptr=readdir(dir)) != NULL)
+        {
+            if(strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
+                continue;
+            
+            if(ptr->d_type == 8) // file
+            {
+                memset(file_name, 0, sizeof(file_name));
+                strcpy(file_name, "./pocs/");
+                strcat(file_name, ptr->d_name);
+                strncpy(poc_pkts[i].vendor, ptr->d_name, sizeof(poc_pkts[i].vendor));
+        
+                file_lines = get_file_lines(file_name);
+                if(file_lines)
+                {
+                    poc_pkts[i].pkt_cnt = file_lines;
+                    poc_pkts[i].pkts = (struct packet*)malloc(sizeof(struct packet) * file_lines);
+                    memset(poc_pkts[i].pkts, 0, sizeof(sizeof(struct packet) * file_lines));
+                    j=0;
+                    if((fp1 = fopen(file_name, "r")) != NULL)
+                    {
+                        while(!feof(fp1))
+                        {
+                            memset(buf, 0, sizeof(buf));
+                            if(fgets(buf, sizeof(buf), fp1))
+                            {
+                                if(buf[0] == '#' || buf[0] == '\r' || buf[0] == '\n')
+                                    continue;
+
+                                poc_pkts[i].pkts[j].len = str_to_hex(buf, poc_pkts[i].pkts[j].data, sizeof(poc_pkts[i].pkts[j].data));
+                                j++;
+                            }
+
+                        }
+
+                        fclose(fp1);
+                    }
+                    i++;
+                }
+            }
+        }
+
+        vendor_cnt = i;
+        closedir(dir);
+    }
+
+    if(vendor_cnt == 0)
+    {
+        printf("Poc packet is empty!\n");
+        exit(-1);
+    }
 
   return (void *)popt;
 }
@@ -336,104 +433,8 @@ int str_to_hex(unsigned char *pascii, unsigned char *phex, unsigned int len)
 struct attacks load_poc()
 {
     struct attacks this_attack;
-    DIR *dir;
-    struct dirent *ptr;
-    int file_cnt;
-    int file_lines;
-    char file_name[255];
-    unsigned char buf[8192];
-    FILE *fp1;
-    int i, j;
-
     char *poc_name = malloc(strlen(POC_NAME) + 1);
     strcpy(poc_name, POC_NAME);
-
-    // load PoC packets
-    if ((dir=opendir("./pocs")) == NULL)
-    {
-        printf("Open pocs dir error!\n");
-        exit(1);
-    }
-
-    file_cnt = 0;
-    while((ptr=readdir(dir)) != NULL)
-    {
-        if(strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
-            continue;
-        
-        if(ptr->d_type == 8) // file
-        {
-            file_cnt++;
-        }
-        
-    }
-    closedir(dir);
-
-    if(file_cnt)
-    {
-        vendor_cnt = file_cnt;
-        poc_pkts = (struct poc_packet*)malloc(sizeof(struct poc_packet) * file_cnt);
-        if(poc_pkts == NULL)
-        {
-            printf("malloc error!\n");
-            exit(-1);
-        }
-
-        memset(poc_pkts, 0, sizeof(struct poc_packet) * file_cnt);
-
-        i=0;
-        dir=opendir("./pocs");
-        while((ptr=readdir(dir)) != NULL)
-        {
-            if(strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
-                continue;
-            
-            if(ptr->d_type == 8) // file
-            {
-                memset(file_name, 0, sizeof(file_name));
-                strcpy(file_name, "./pocs/");
-                strcat(file_name, ptr->d_name);
-                strncpy(poc_pkts[i].vendor, ptr->d_name, sizeof(poc_pkts[i].vendor));
-        
-                file_lines = get_file_lines(file_name);
-                if(file_lines)
-                {
-                    poc_pkts[i].pkt_cnt = file_lines;
-                    poc_pkts[i].pkts = (struct packet*)malloc(sizeof(struct packet) * file_lines);
-                    memset(poc_pkts[i].pkts, 0, sizeof(sizeof(struct packet) * file_lines));
-                    j=0;
-                    if((fp1 = fopen(file_name, "r")) != NULL)
-                    {
-                        while(!feof(fp1))
-                        {
-                            memset(buf, 0, sizeof(buf));
-                            if(fgets(buf, sizeof(buf), fp1))
-                            {
-                                if(buf[0] == '#' || buf[0] == '\r' || buf[0] == '\n')
-                                    continue;
-
-                                poc_pkts[i].pkts[j].len = str_to_hex(buf, poc_pkts[i].pkts[j].data, sizeof(poc_pkts[i].pkts[j].data));
-                                j++;
-                            }
-
-                        }
-
-                        fclose(fp1);
-                    }
-                    i++;
-                }
-            }
-        }
-
-        vendor_cnt = i;
-        closedir(dir);
-    }
-
-    if(vendor_cnt == 0)
-    {
-        printf("Poc packet is empty!\n");
-        exit(-1);
-    }
 
     this_attack.print_shorthelp = (fp) poc_shorthelp;
     this_attack.print_longhelp = (fp) poc_longhelp;

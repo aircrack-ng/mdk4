@@ -45,6 +45,8 @@ install: mdk4
 	install -D -m 0755 $^ $(SBINDIR)/$^
 	$(MAKE) -C $(ATTACKS) install
 	$(MAKE) -C $(OSD) install
+	mkdir -p /usr/local/src/mdk4
+	cp -r pocs /usr/local/src/mdk4
 
 .PHONY : clean
 clean:

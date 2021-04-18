@@ -317,7 +317,7 @@ p - Create broadcast probe requests
 .BI -m " <modifiers>"
 Select at least one of the modifiers here:
 .br
-n - No modifier, do not modify packets
+n - No modifier, do not modify packetscc
 .br
 b - Set destination address to broadcast
 .br
@@ -336,6 +336,28 @@ Enable channel hopping. When -c h is given, mdk4 will hop an all 14 b/g channels
 .TP
 .BI -p " <pps>"
 Set speed in packets per second (Default: 250)
+.RE
+c
+.B x
+- Poc Testing
+.br
+Proof-of-concept of WiFi protocol implementation vulnerability testing.
+.RS
+.TP
+.BI -s " <pps>"
+Set speed in packets per second (Default: unlimited)
+.TP
+.BI -c " [chan,chan,...,chan[:speed]]"
+Enable channel hopping. When -c h is given, mdk4 will hop an all 14 b/g channels. Channel will be changed every 3 seconds, if speed is not specified. Speed value is in milliseconds!
+.TP
+.BI -v <vendor>
+File name in pocs dir, default test all.
+.TP
+.BI -A " <AP MAC>"
+Set an AP MAC
+.TP
+.BI -S " <Station MAC>"
+Set a Station MAC
 .RE
 .RE
 
