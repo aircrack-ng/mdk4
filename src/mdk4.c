@@ -71,7 +71,6 @@ void main_loop(struct attacks *att, void *options) {
     //Get packet
     inject = att->get_packet(options);
     if ((inject.data == NULL) || (inject.len == 0)) 
-      //break;
       continue;
 
     //Send packet
