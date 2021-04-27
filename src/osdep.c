@@ -39,7 +39,6 @@ char *osdep_iface_out = NULL;
 
 int osdep_start(char *interface1, char *interface2)
 {
-
     osdep_iface_in = malloc(strlen(interface1) + 1);
     strcpy(osdep_iface_in, interface1);
 

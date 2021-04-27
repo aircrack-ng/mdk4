@@ -8,8 +8,11 @@
 
 struct poc_options {
   char vendor[255];
-  struct ether_addr ap_mac;
-  struct ether_addr sta_mac;
+  struct ether_addr bssid;
+  struct ether_addr source_mac;
+  struct ether_addr target_mac;
+  uint16_t seq_ctrl;
+	uint16_t recv_seq_ctrl;
   unsigned int speed;
 
 };

@@ -36,11 +36,14 @@ void poc_longhelp()
 	  "         14 b/g channels. Channel will be changed every 3 seconds,\n"
 	  "         if speed is not specified. Speed value is in milliseconds!\n"
       "      -v <vendor>\n"
-      "         file name in pocs dir, default test all.\n"
-	  "      -A <AP MAC>\n"
+      "         File name in pocs dir, default test all.\n"
+	  "      -B <BSSID，AP MAC>\n"
 	  "         set an AP MAC\n"
-	  "      -S <Station MAC>\n"
-	  "         set a station MAC.\n");
+	  "      -S <Source MAC>\n"
+	  "         set source MAC.\n"
+      "      -T <Target MAC>\n"
+	  "         set target MAC.\n"
+      );
 }
 
 void* poc_parse(int argc, char *argv[]) {
@@ -58,7 +61,7 @@ void* poc_parse(int argc, char *argv[]) {
   struct poc_options *popt = malloc(sizeof(struct poc_options));
   memset(popt, 0, sizeof(struct poc_options));
 
-  while ((opt = getopt(argc, argv, "s:v:c:A:S:")) != -1) {
+  while ((opt = getopt(argc, argv, "s:v:c:B:S:T:")) != -1) {
     switch (opt) {
     case 's':
         popt->speed = (unsigned int) atoi(optarg);
@@ -78,12 +81,15 @@ void* poc_parse(int argc, char *argv[]) {
     case 'v':
         strncpy(popt->vendor, optarg, sizeof(popt->vendor) - 1);
         break;
-	case 'A':
-        popt->ap_mac = parse_mac(optarg);
+	case 'B':
+        popt->bssid = parse_mac(optarg);
 	    break;
 	case 'S':
-  	    popt->sta_mac = parse_mac(optarg);
+  	    popt->source_mac = parse_mac(optarg);
 	    break;
+    case 'T':
+        popt->target_mac = parse_mac(optarg);
+        break;
     default:
         poc_longhelp();
         printf("\n\nUnknown option %c\n", opt);
@@ -189,6 +195,8 @@ unsigned char get_target(struct poc_options *popt) {
     uint8_t dsflags;
     unsigned char ret = 0;
     struct ether_addr dmac, smac, bssid;
+    uint16_t seq_ctrl;
+    uint16_t recv_seq_ctrl;
 
     if(popt == NULL)
         return ret;
@@ -230,9 +238,14 @@ unsigned char get_target(struct poc_options *popt) {
             break;
         }
 
-        if(MAC_MATCHES(bssid, popt->ap_mac) && (MAC_MATCHES(dmac, popt->sta_mac) && MAC_MATCHES(smac, popt->ap_mac)))
+        if(MAC_MATCHES(smac, popt->source_mac))
         {
-            set_seqno(NULL, get_seqno(&sniffed));
+            seq_ctrl = get_seqno(&sniffed);
+            if(seq_ctrl == popt->seq_ctrl)
+                continue;
+
+            popt->seq_ctrl = seq_ctrl;
+            set_seqno(NULL, seq_ctrl);
             ret = 1;
             break;
         }
@@ -309,25 +322,26 @@ struct packet poc_getpacket(void *options) {
                 if((hdr->type & 0x0F) != 0x04)
 				{
                     switch (dsflags) {
-                        case 0x00:
-                        MAC_COPY(hdr->addr1, popt->ap_mac);
-                        MAC_COPY(hdr->addr2, popt->sta_mac);
-                        MAC_COPY(hdr->addr3, popt->ap_mac);
+                        case 0x00: //Ad Hoc, Beacons:    ToDS 0 FromDS 0  Addr: DST, SRC, BSS
+                        MAC_COPY(hdr->addr1, popt->target_mac);
+                        MAC_COPY(hdr->addr2, popt->source_mac);
+                        MAC_COPY(hdr->addr3, popt->bssid);
                         break;
-                        case 0x01:
-                        MAC_COPY(hdr->addr1, popt->ap_mac);
-                        MAC_COPY(hdr->addr2, popt->sta_mac);
-                        MAC_COPY(hdr->addr3, popt->ap_mac);
+                        case 0x01: //From station to AP: ToDS 1 FromDS 1  Addr: BSS, SRC, DST
+                        MAC_COPY(hdr->addr1, popt->bssid);
+                        MAC_COPY(hdr->addr2, popt->source_mac);
+                        MAC_COPY(hdr->addr3, popt->target_mac);
                         break;
-                        case 0x02:
-                        MAC_COPY(hdr->addr1, popt->sta_mac);
-                        MAC_COPY(hdr->addr2, popt->ap_mac);
-                        MAC_COPY(hdr->addr3, popt->ap_mac);
+                        case 0x02: //From AP to station: ToDS 0 FromDS 1  Addr: DST, BSS, SRC
+                        MAC_COPY(hdr->addr1, popt->target_mac);
+                        MAC_COPY(hdr->addr2, popt->bssid);
+                        MAC_COPY(hdr->addr3, popt->source_mac);
                         break;
-                        case 0x03:
-                        MAC_COPY(hdr->addr1, popt->ap_mac);
-                        MAC_COPY(hdr->addr3, popt->sta_mac);
-                        MAC_COPY(*(struct ether_addr*)(poc_pkts[vendor_idx].pkts[pkt_idx].data + sizeof(struct ieee_hdr)), popt->ap_mac);
+                        case 0x03: //WDS: ToDS 1 FromDS 1  Addr: RCV, TRN, DST ... SRC
+                        MAC_COPY(hdr->addr1, popt->bssid);
+                        MAC_COPY(hdr->addr2, popt->bssid);
+                        MAC_COPY(hdr->addr3, popt->target_mac);
+                        MAC_COPY(*(struct ether_addr*)(poc_pkts[vendor_idx].pkts[pkt_idx].data + sizeof(struct ieee_hdr)), popt->source_mac);
                         break;
                     }
 
@@ -339,54 +353,54 @@ struct packet poc_getpacket(void *options) {
                     while(!get_target(popt));
 
                     next_seqno = get_next_seqno();
-                    set_seqno(&pkt, next_seqno);
+                    set_seqno(&pkt, next_seqno+2);
                 }
                 else
                 {
 					switch(hdr->type)
 					{
 						case IEEE80211_TYPE_BEAMFORMING:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_VHT:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_CTRLFRMEXT:
 							break;
 						case IEEE80211_TYPE_CTRLWRAP:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_BLOCKACKREQ:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_BLOCKACK:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_PSPOLL:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_RTS:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_CTS:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_ACK:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_CFEND:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						case IEEE80211_TYPE_CFENDACK:
-							memcpy(hdr->addr1.ether_addr_octet, popt->sta_mac.ether_addr_octet, ETHER_ADDR_LEN);
-							memcpy(hdr->addr2.ether_addr_octet, popt->ap_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr1.ether_addr_octet, popt->target_mac.ether_addr_octet, ETHER_ADDR_LEN);
+							memcpy(hdr->addr2.ether_addr_octet, popt->source_mac.ether_addr_octet, ETHER_ADDR_LEN);
 							break;
 						default:
 							break;
