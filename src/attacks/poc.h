@@ -13,6 +13,8 @@ struct poc_options {
   struct ether_addr target_mac;
   uint16_t seq_ctrl;
 	uint16_t recv_seq_ctrl;
+  uint16_t data_seq_ctrl;
+  uint16_t recv_data_seq_ctrl;
   unsigned int speed;
 
 };

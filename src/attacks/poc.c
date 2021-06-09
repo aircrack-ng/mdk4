@@ -209,8 +209,14 @@ unsigned char get_target(struct poc_options *popt) {
         }
 
         hdr = (struct ieee_hdr *) sniffed.data;
-        if((hdr->type & 0x0F) != 0x00 && (hdr->type & 0x0F) != 0x08)
-            continue;
+        if((hdr->type & 0x0F) != MANAGMENT_FRAME && (hdr->type & 0x0F) != DATA_FRAME){
+            //continue;
+            popt->seq_ctrl++;
+            popt->data_seq_ctrl++;
+            ret = 1;
+            break;
+        }
+            
 
         //if(hdr->type == IEEE80211_TYPE_BEACON || hdr->type == IEEE80211_TYPE_PROBEREQ || hdr->type == IEEE80211_TYPE_PROBERES)
         //    continue;
@@ -241,13 +247,28 @@ unsigned char get_target(struct poc_options *popt) {
         if(MAC_MATCHES(smac, popt->source_mac))
         {
             seq_ctrl = get_seqno(&sniffed);
-            if(seq_ctrl == popt->seq_ctrl)
-                continue;
+            if((hdr->type & 0x0F) == MANAGMENT_FRAME)
+            {
+                if(seq_ctrl != popt->seq_ctrl)
+                {
+                    popt->seq_ctrl = seq_ctrl;
+                    set_seqno(NULL, seq_ctrl);
+                    ret = 1;
+                    break;
+                }
 
-            popt->seq_ctrl = seq_ctrl;
-            set_seqno(NULL, seq_ctrl);
-            ret = 1;
-            break;
+
+            }
+            else if((hdr->type & 0x0F) == DATA_FRAME)
+            {
+                if(seq_ctrl != popt->data_seq_ctrl)
+                {
+                    popt->data_seq_ctrl = seq_ctrl;
+                    ret = 1;
+                    break;
+                }
+            }
+
         }
     }
     return ret;
@@ -352,8 +373,22 @@ struct packet poc_getpacket(void *options) {
 
                     while(!get_target(popt));
 
-                    next_seqno = get_next_seqno();
-                    set_seqno(&pkt, next_seqno+2);
+                    if(hdr->type == IEEE80211_TYPE_BEACON)
+                    {
+                        memcpy(hdr->addr1.ether_addr_octet, BROADCAST, ETHER_ADDR_LEN);
+                    }
+
+                    if((hdr->type & 0x0F) == MANAGMENT_FRAME)
+                    {
+                        next_seqno = popt->seq_ctrl + 1;
+                        set_seqno(&pkt, next_seqno);
+                    }
+                    else if((hdr->type & 0x0F) == DATA_FRAME)
+                    {
+                        next_seqno = popt->data_seq_ctrl + 1;
+                        set_seqno(&pkt, next_seqno);
+                    }
+
                 }
                 else
                 {
