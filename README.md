@@ -10,7 +10,7 @@ MDK4 is a new version of MDK3.
 MDK4 is a Wi-Fi testing tool from E7mer, ASPj of k2wrlz, it uses the osdep library from the aircrack-ng project to inject frames on several operating systems.
 Many parts of it have been contributed by the great aircrack-ng community: Antragon, moongray, Ace, Zero_Chaos, Hirte, thefkboss, ducttape, telek0miker, Le_Vert, sorbo, Andy Green, bahathir, Dawid Gajownik and Ruslan Nabioullin. THANK YOU!
 
-MDK4 is licenced under the GPLv2 or later.
+MDK4 is licenced under the GPLv3 or later.
 
 
 # Installation
