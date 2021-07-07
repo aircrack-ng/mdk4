@@ -19,11 +19,11 @@ struct attacks *global_cur_attack;
 
 
 char *mdk4_help = "MDK4 " VERSION " - \"" VERSION_COOL "\"\n"
-		  "by E7mer, thanks to the aircrack-ng community.\n"
+		  "by E7mer, thanks to the author of MDK3 and aircrack-ng community.\n"
 		  "MDK4 is a proof-of-concept tool to exploit common IEEE 802.11 protocol weaknesses.\n"
 		  "IMPORTANT: It is your responsibility to make sure you have permission from the\n"
 		  "network owner before running MDK4 against it.\n\n"
-		  "This code is licenced under the GPLv2 or later\n\n"
+		  "This code is licenced under the GPLv3 or later\n\n"
 		  "MDK4 USAGE:\n"
 		  "mdk4 <interface> <attack_mode> [attack_options]\n"
 		  "mdk4 <interface in> <interface out> <attack_mode> [attack_options]\n\n"
