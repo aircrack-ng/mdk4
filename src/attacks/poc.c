@@ -53,6 +53,7 @@ void* poc_parse(int argc, char *argv[]) {
   struct dirent *ptr;
   int file_cnt;
   int file_lines;
+  char poc_path[256];
   char file_name[255];
   unsigned char buf[8192];
   FILE *fp1;
@@ -96,13 +97,16 @@ void* poc_parse(int argc, char *argv[]) {
         return NULL;
     }
   }
-     // load PoC packets
-    if ((dir=opendir("./pocs")) == NULL)
-    {
-	if(dir=opendir("/usr/local/src/mdk4/pocs")==NULL){
+    // load PoC packets
+    strcpy(poc_path, "./pocs");
+    dir=opendir(poc_path);
+    if (dir == NULL){
+        strcpy(poc_path, "/usr/local/src/mdk4/pocs");
+        dir=opendir(poc_path);
+        if(dir == NULL){
             printf("Open pocs dir error!\n");
             exit(1);
-	}
+	    }
     }
 
     file_cnt = 0;
@@ -115,7 +119,6 @@ void* poc_parse(int argc, char *argv[]) {
         {
             file_cnt++;
         }
-        
     }
     closedir(dir);
 
@@ -132,7 +135,7 @@ void* poc_parse(int argc, char *argv[]) {
         memset(poc_pkts, 0, sizeof(struct poc_packet) * file_cnt);
 
         i=0;
-        dir=opendir("./pocs");
+        dir=opendir(poc_path);
         while((ptr=readdir(dir)) != NULL)
         {
             if(strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
@@ -141,7 +144,8 @@ void* poc_parse(int argc, char *argv[]) {
             if(ptr->d_type == 8) // file
             {
                 memset(file_name, 0, sizeof(file_name));
-                strcpy(file_name, "./pocs/");
+                strcpy(file_name, poc_path);
+                strcat(file_name, "/");
                 strcat(file_name, ptr->d_name);
                 strncpy(poc_pkts[i].vendor, ptr->d_name, sizeof(poc_pkts[i].vendor));
         
