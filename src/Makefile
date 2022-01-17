@@ -41,11 +41,11 @@ test: test.c $(OBJS)
 	mv $(@) ..
 
 install: mdk4
-	install -D -m 0755 $^ $(DESTDIR)/$(SBINDIR)/$^
+	install -D -m 0755 $^ $(SBINDIR)/$^
 	$(MAKE) -C $(ATTACKS) install
 	$(MAKE) -C $(OSD) install
-	mkdir -p $(DESTDIR)$(PREFIX)/share/mdk4
-	cp -r pocs $(DESTDIR)$(PREFIX)/share/mdk4
+	mkdir -p $(PREFIX)/share/mdk4
+	cp -r pocs $(PREFIX)/share/mdk4
 
 .PHONY : clean
 clean:

@@ -1,10 +1,11 @@
 DESTDIR		?=
-PREFIX		?= /usr/local
+PREFIX		?= /usr
 SBINDIR		?= $(PREFIX)/sbin
 MANDIR		?= $(PREFIX)/share/man
 
 SRC		= src
 
+export PREFIX
 
 all: clean
 	$(MAKE) -C $(SRC)
