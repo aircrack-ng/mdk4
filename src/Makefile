@@ -3,10 +3,10 @@ include $(MDK_ROOT)/common.mak
 
 # TODO: Remove '-fcommon' from CFLAGS and address issues, reference:
 # https://gcc.gnu.org/gcc-10/porting_to.html#common
-CFLAGS		+= -g -O3 -Wall -Wextra -fcommon
+CFLAGS		?= -g -O3 -Wall -Wextra -fcommon
 LINKFLAGS	= -lpthread -lpcap $(LDFLAGS)
 
-SBINDIR		= $(PREFIX)/sbin
+SBINDIR		?= $(PREFIX)/sbin
 MANDIR		= $(PREFIX)/share/man
 
 OSD		= osdep
@@ -41,11 +41,11 @@ test: test.c $(OBJS)
 	mv $(@) ..
 
 install: mdk4
-	install -D -m 0755 $^ $(SBINDIR)/$^
+	install -D -m 0755 $^ $(DESTDIR)/$(SBINDIR)/$^
 	$(MAKE) -C $(ATTACKS) install
 	$(MAKE) -C $(OSD) install
-	mkdir -p /usr/local/src/mdk4
-	cp -r pocs /usr/local/src/mdk4
+	mkdir -p $(DESTDIR)$(PREFIX)/share/mdk4
+	cp -r pocs $(DESTDIR)$(PREFIX)/share/mdk4
 
 .PHONY : clean
 clean:
