@@ -121,7 +121,7 @@ OPTFLAGS        = -D_FILE_OFFSET_BITS=64
 CFLAGS          ?= -g -W -Wall -O3
 CFLAGS          += $(OPTFLAGS) $(REVFLAGS) $(COMMON_CFLAGS)
 
-prefix          = /usr/local
+prefix          ?= /usr/local
 bindir          = $(prefix)/bin
 sbindir         = $(prefix)/sbin
 mandir          = $(prefix)/share/man/man1

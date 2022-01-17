@@ -101,12 +101,16 @@ void* poc_parse(int argc, char *argv[]) {
     strcpy(poc_path, "./pocs");
     dir=opendir(poc_path);
     if (dir == NULL){
-        strcpy(poc_path, "/usr/local/src/mdk4/pocs");
+        strcpy(poc_path, "/usr/share/mdk4/pocs");
         dir=opendir(poc_path);
         if(dir == NULL){
-            printf("Open pocs dir error!\n");
-            exit(1);
-	    }
+            strcpy(poc_path, "/usr/local/share/mdk4/pocs");
+            dir=opendir(poc_path);
+            if(dir == NULL){
+                printf("Open pocs dir error!\n");
+                exit(1);
+            }
+	}
     }
 
     file_cnt = 0;

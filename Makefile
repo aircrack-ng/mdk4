@@ -1,7 +1,7 @@
-DESTDIR		= 
-PREFIX		= /usr/local
-SBINDIR		= $(PREFIX)/sbin
-MANDIR		= $(PREFIX)/share/man
+DESTDIR		?=
+PREFIX		?= /usr/local
+SBINDIR		?= $(PREFIX)/sbin
+MANDIR		?= $(PREFIX)/share/man
 
 SRC		= src
 
@@ -12,8 +12,7 @@ all: clean
 install: all
 	PREFIX=$(DESTDIR)$(PREFIX)
 	$(MAKE) -C $(SRC) install
-	install -D -m 0644 man/mdk4.2 $(DESTDIR)$(MANDIR)/man8/mdk4.2
-	gzip -f $(DESTDIR)$(MANDIR)/man8/mdk4.2
+	install -D -m 0644 man/mdk4.8 $(DESTDIR)$(MANDIR)/man8/mdk4.8
 
 .PHONY : clean
 clean:
