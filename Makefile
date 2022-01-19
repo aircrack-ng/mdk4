@@ -5,13 +5,12 @@ MANDIR		?= $(PREFIX)/share/man
 
 SRC		= src
 
-export PREFIX
+export DESTDIR PREFIX
 
 all: clean
 	$(MAKE) -C $(SRC)
 
 install: all
-	PREFIX=$(DESTDIR)$(PREFIX)
 	$(MAKE) -C $(SRC) install
 	install -D -m 0644 man/mdk4.8 $(DESTDIR)$(MANDIR)/man8/mdk4.8
 
