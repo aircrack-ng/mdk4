@@ -14,4 +14,13 @@ char is_blacklisted(struct ether_addr mac);
 
 char is_whitelisted(struct ether_addr mac);
 
+typedef enum
+{
+  BLACK_LIST,
+  WHITE_LIST,
+
+}greylist_type;
+
+void load_greylist(greylist_type type, char *filename);
+
 #endif

@@ -10,13 +10,6 @@ struct greylist {
   struct greylist *next;
 };
 
-typedef enum
-{
-  BLACK_LIST,
-  WHITE_LIST,
-
-}list_type;
-
 struct greylist *glist = NULL;
 struct greylist *blist = NULL;
 struct greylist *wlist = NULL;
@@ -58,7 +51,7 @@ struct greylist *search_in_greylist(struct ether_addr mac, struct greylist *gl) 
   return NULL;
 }
 
-void load_greylist(list_type type, char *filename) {
+void load_greylist(greylist_type type, char *filename) {
   char *entry;
 
   if (filename) {

@@ -266,4 +266,7 @@ void set_seqno(struct packet *pkt, uint16_t seqno);
 uint8_t get_fragno(struct packet *pkt);
 void set_fragno(struct packet *pkt, uint8_t frag, int last_frag);
 
+void add_ssid_set(struct packet *pkt, char *ssid);
+void add_rate_sets(struct packet *pkt, char b_rates, char g_rates);
+
 #endif
