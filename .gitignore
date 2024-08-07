@@ -1,3 +1,6 @@
+# .os.* files
+.os.*
+
 # Prerequisites
 *.d
 
