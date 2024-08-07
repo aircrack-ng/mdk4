@@ -10,6 +10,7 @@
 #include "../osdep.h"
 #include "../channelhopper.h"
 #include "../helpers.h"
+#include <ctype.h>
 
 
 #define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability testing"
