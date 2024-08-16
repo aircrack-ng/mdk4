@@ -111,9 +111,7 @@ FULL OPTIONS:
 			 This is more effective with some devices/drivers
 			 But it reduces packet rate due to channel hopping.
 		      -c <chan>
-			 Create fake networks on channel <c		ATTACK MODE f: Packet Fuzzer
-		  A simple packet fuzzer with multiple packet sources
-		  and a nice set of modifiers. Be careful!han>. If you want your card to
+			 Create fake networks on channel <chan>. If you want your card to
 			 hop on this channel, you have to set -h option, too.
 		      -i <HEX>
 			 Add user-defined IE(s) in hexadecimal at the end of the tagged parameters
