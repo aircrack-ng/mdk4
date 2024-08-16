@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <pthread.h>
+#include <ctype.h>
 
 #include "poc.h"
 
@@ -16,6 +17,9 @@
 
 struct poc_packet *poc_pkts = NULL;
 int vendor_cnt = 0;
+
+int get_file_lines(char * filename);
+int str_to_hex(unsigned char *pascii, unsigned char *phex, unsigned int len);
 
 void poc_shorthelp()
 {
