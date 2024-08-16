@@ -1,3 +1,6 @@
+# .os.* files
+.os.*
+
 # Prerequisites
 *.d
 
@@ -35,6 +38,7 @@
 *.i*86
 *.x86_64
 *.hex
+src/mdk4
 
 # Debug files
 *.dSYM/

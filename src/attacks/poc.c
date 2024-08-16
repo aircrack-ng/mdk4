@@ -11,6 +11,7 @@
 #include "../osdep.h"
 #include "../channelhopper.h"
 #include "../helpers.h"
+#include <ctype.h>
 
 
 #define POC_NAME "Proof-of-concept of WiFi protocol implementation vulnerability testing"
@@ -517,7 +518,7 @@ int str_to_hex(unsigned char *pascii, unsigned char *phex, unsigned int len)
 	unsigned char s1, s2;
 
 	if(pascii == NULL || phex == NULL || len == 0)
-		return;
+		return (int)NULL;
 
 	str_len = strlen(pascii)/4;
 	if(str_len)
