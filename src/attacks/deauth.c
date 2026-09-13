@@ -377,8 +377,8 @@ unsigned char get_new_target(struct ether_addr *client, struct ether_addr *ap, s
       MAC_COPY(*ap, hdr->addr1);
     break;
     case 0x01: //ToDS
-      MAC_COPY(*client, hdr->addr3);
-      MAC_COPY(*ap, hdr->addr2);
+      MAC_COPY(*client, hdr->addr2);
+      MAC_COPY(*ap, hdr->addr1);
     break;
     case 0x02: //FromDS
       MAC_COPY(*client, hdr->addr1);
